@@ -27,6 +27,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Flutter Firebase Demo',
+        theme: new ThemeData(scaffoldBackgroundColor: Colors.white70),
         home: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -49,8 +50,9 @@ class _MyAppState extends State<MyApp> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async => [
-              if ((textController.text == "") & (finalurl == ""))
+              if ((textController.text == "") & (finalurl == "")){
                 {Navigator.of(context).pop()}
+              }
               else
                 {
                   FirebaseFirestore.instance.collection('posts').add({
@@ -72,8 +74,8 @@ class _MyAppState extends State<MyApp> {
                 borderRadius: BorderRadius.all(Radius.circular(12))),
           ),
           //floatingActionButtonLocation: ,
-          body: new SingleChildScrollView(
-            child: Container(
+          body: ListView(
+            children: [ Container(
               child: Container(
                 child: Column(
                   children: [
@@ -85,7 +87,7 @@ class _MyAppState extends State<MyApp> {
                           child: TextField(
                             controller: textController,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(),
+                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 0.5)),
                               labelText: 'Post',
                               hintText: 'Write your thoughts',
                             ),
@@ -165,16 +167,17 @@ class _MyAppState extends State<MyApp> {
                                       .doc(snapshot.data!.docs[index].id)
                                       .delete();
                                 },
-                                child: SizedBox(
-                                    width: 1000,
-                                    height: 250,
+                                child: Container(
+                                // child: SizedBox(
+                                //     width: 1000,
+                                //     height: 250,
                                     child: Card(
                                         margin: EdgeInsets.all(10),
-                                        color: Colors.primaries[Random()
-                                            .nextInt(Colors.primaries.length)],
+                                        color: Color.fromRGBO(96,125,139, 2),
+                                        //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                         shadowColor: Colors.blueGrey,
                                         elevation: 10,
-                                        child: SingleChildScrollView(
+                                        child: Container(
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
@@ -183,7 +186,7 @@ class _MyAppState extends State<MyApp> {
                                                       child: Text(textContent,
                                                           style: TextStyle(
                                                               fontSize: 18)),
-                                                      offset: Offset(1, 10)),
+                                                      offset: Offset(1, 1)),
                                                   trailing: Text(
                                                       DateFormat.yMMMd()
                                                           .add_jm()
@@ -195,7 +198,7 @@ class _MyAppState extends State<MyApp> {
                                                           child: Image.network(
                                                               imageUrl),
                                                           offset:
-                                                              Offset(10, 40))
+                                                              Offset(10, 1))
                                                       : null),
                                             ],
                                           ),
@@ -216,7 +219,7 @@ class _MyAppState extends State<MyApp> {
                   ],
                 ),
               ),
-            ),
+            )],
           ),
         ));
   }
@@ -225,8 +228,8 @@ class _MyAppState extends State<MyApp> {
 Future<String> uploadimage() async {
   XFile? pickedImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      maxWidth: 200,
-      maxHeight: 200,
+      maxWidth: 1980,
+      maxHeight: 1080,
       imageQuality: 80);
 
   Reference ref =
