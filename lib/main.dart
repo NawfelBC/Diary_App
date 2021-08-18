@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'dart:developer';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +22,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    KeyboardVisibilityController().onChange.listen((isVisible) {
+      final message = isVisible ? 'Keyboard Opened' : 'Keyboard Hidden';
+      if (message == 'Keyboard Hidden') {
+        FocusScope.of(context).requestFocus(FocusNode());
+      }
+    });
+  }
   var finalurl;
+  
   TextEditingController textController = new TextEditingController();
+  bool checker = false;
+  var temp;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Flutter Firebase Demo',
-        theme: new ThemeData(scaffoldBackgroundColor: Colors.white70),
+        theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
         home: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -41,26 +56,30 @@ class _MyAppState extends State<MyApp> {
               child: Text(
                 'diary'.toUpperCase(),
                 style: GoogleFonts.gruppo(
-                  color: Colors.black,
-                  fontSize: 36,
+                  color: Colors.white,
+                  fontSize: 42,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
+            backgroundColor: Color.fromRGBO(124, 144, 153, 2),
             onPressed: () async => [
               if ((textController.text == "") & (finalurl == "")){
                 {Navigator.of(context).pop()}
               }
               else
-                {
+                { 
                   FirebaseFirestore.instance.collection('posts').add({
                     //'creator id': ,
                     'text': textController.text,
                     'timestamp': Timestamp.fromDate(DateTime.now()),
                     'imageUrl': finalurl != null ? finalurl : '',
+                    'edited': 'N'
                   }),
+                  textController.clear(),
+                  FocusScope.of(context).requestFocus(FocusNode()),
                   setState(() {
                     finalurl = '';
                   })
@@ -73,42 +92,53 @@ class _MyAppState extends State<MyApp> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12))),
           ),
-          //floatingActionButtonLocation: ,
           body: ListView(
             children: [ Container(
               child: Container(
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.all(15),
+                      padding: EdgeInsets.all(8),
                       child: Column(children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.all(15),
-                          child: TextField(
+                          TextField(
+                            keyboardType: TextInputType.multiline,
+                            maxLines: 5,
+                            style: TextStyle(color: Colors.white),
                             controller: textController,
                             decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 0.5)),
-                              labelText: 'Post',
-                              hintText: 'Write your thoughts',
+                              // isDense: true,
+                              // contentPadding: EdgeInsets.all(40),
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.add_a_photo),
+                                color: Colors.white,
+                                tooltip: 'Upload Image',
+                                onPressed: () {
+                                  uploadimage().then((imageUrl) {
+                                    setState(() {
+                                      finalurl = imageUrl;
+                                    });
+                                  });
+                                },
+                              ),
+                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
+                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
+                              labelText: 'Post something',
+                              labelStyle: TextStyle(fontSize: 15,color: Colors.white),
+                              hintText: 'What’s up ?',
+                              hintStyle: TextStyle(color: Colors.white)
                             ),
                           ),
-                        ),
                       ]),
                     ),
-                    ElevatedButton(
-                      child: Text("Upload Image",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22)),
-                      onPressed: () {
-                        uploadimage().then((imageUrl) {
-                          setState(() {
-                            finalurl = imageUrl;
-                          });
-                        });
-                      },
-                    ),
+                    Container(
+                      padding: EdgeInsets.only(right: 200),
+                      child : Text((finalurl != '' && finalurl != null) ? 'Image successfully uploaded !' : '', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14))),
+                    SizedBox(height: 13),
+                    Center(child: Container(
+                      color: Color.fromRGBO(24, 24, 24, 2),
+                      padding: EdgeInsets.all(12),
+                      child: Text('Your posts', style: GoogleFonts.alegreya(color: Colors.white, fontSize: 26)))),
+                    SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('posts')
@@ -121,15 +151,16 @@ class _MyAppState extends State<MyApp> {
                         if (!snapshot.hasData) return const SizedBox.shrink();
                         return Container(
                             child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: snapshot.data!.docs.length,
-                          itemBuilder: (BuildContext context, int index) {
+                            shrinkWrap: true,
+                            itemCount: snapshot.data!.docs.length,
+                            itemBuilder: (BuildContext context, int index) {
                             final docData = snapshot.data!.docs[index];
                             final dateTime = (docData['timestamp'] as Timestamp)
                                 .toDate()
                                 .toLocal();
                             final textContent = (docData['text'] as String);
                             final imageUrl = (docData['imageUrl'] as String);
+                            final edition = (docData['edited'] as String);
                             return Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
@@ -168,60 +199,155 @@ class _MyAppState extends State<MyApp> {
                                       .delete();
                                 },
                                 child: Container(
-                                // child: SizedBox(
-                                //     width: 1000,
-                                //     height: 250,
+                                    child : GestureDetector(
+                                    onTap: () => showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      TextEditingController _textFieldController = TextEditingController();
+                                      if (checker)
+                                        _textFieldController.text = temp;
+                                      else
+                                        _textFieldController.text = textContent;
+                                      return AlertDialog(
+                                        title:
+                                            const Text("Edit Post"),
+                                        content: TextField(
+                                          keyboardType: TextInputType.multiline,
+                                          maxLines: 6,
+                                            onChanged: (value) { },
+                                            controller: _textFieldController,
+                                            decoration: InputDecoration(hintText: 'Text'),
+                                          ),
+                                        actions: <Widget>[
+                                          TextButton(
+                                              onPressed: () {
+                                                if (finalurl != null){
+                                                  FirebaseFirestore.instance
+                                                  .collection('posts')
+                                                  .doc(snapshot.data!.docs[index].id)
+                                                  .update({ 
+                                                    'text': _textFieldController.text,
+                                                    'imageUrl': finalurl,
+                                                    'edited': 'Y'
+                                                  });
+                                                  setState(() {
+                                                    finalurl = '';
+                                                  });
+                                                  _textFieldController.clear();
+                                                  Navigator.of(context)
+                                                    .pop(false);
+                                                } else if (finalurl == null){
+                                                  FirebaseFirestore.instance
+                                                  .collection('posts')
+                                                  .doc(snapshot.data!.docs[index].id)
+                                                  .update({ 
+                                                    'text': _textFieldController.text,
+                                                    'edited': 'Y'
+                                                  });
+                                                  setState(() {
+                                                    finalurl = '';
+                                                  });
+                                                  _textFieldController.clear();
+                                                  Navigator.of(context)
+                                                    .pop(false);
+                                                }
+                                                else{
+                                                  setState(() {
+                                                    finalurl = '';
+                                                  });
+                                                  Navigator.of(context)
+                                                    .pop(false);
+                                                }
+                                                FocusScope.of(context).requestFocus(FocusNode());  
+                                              },
+                                              child: const Text("Done")),
+                                          TextButton(
+                                            child: const Text("Change Image"),
+                                            onPressed: () async {
+                                              await uploadimage().then((imageUrl) {
+                                                setState(() {
+                                                  checker = true;
+                                                  finalurl = imageUrl;
+                                                  temp = _textFieldController.text;
+                                                });
+                                              });
+                                            },
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context)
+                                                    .pop(false),
+                                            child: const Text("Cancel"),
+                                          ),
+                                        ],
+                                    );}),
                                     child: Card(
                                         margin: EdgeInsets.all(10),
-                                        color: Color.fromRGBO(96,125,139, 2),
+                                        color: Color.fromRGBO(128, 104, 104, 2),
+                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
                                         //Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                                        shadowColor: Colors.blueGrey,
-                                        elevation: 10,
+                                        //shadowColor: Colors.white,
+                                        elevation: 7,
                                         child: Container(
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
                                               ListTile(
-                                                  title: Transform.translate(
+                                                  title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
                                                       child: Text(textContent,
                                                           style: TextStyle(
-                                                              fontSize: 18)),
-                                                      offset: Offset(1, 1)),
-                                                  trailing: Text(
+                                                              fontSize: 16, color: Colors.white)),
+                                                      offset: Offset(1, 1))),
+                                                  trailing: edition == 'Y'
+                                                  ? Text(
+                                                      '               Edited\n' + DateFormat.yMMMd()
+                                                          .add_jm()
+                                                          .format(dateTime),
+                                                      style: TextStyle(
+                                                          fontSize: 12, color: Colors.white))
+                                                  : Text(
                                                       DateFormat.yMMMd()
                                                           .add_jm()
                                                           .format(dateTime),
                                                       style: TextStyle(
-                                                          fontSize: 12)),
+                                                          fontSize: 12, color: Colors.white)),
                                                   subtitle: imageUrl != ""
-                                                      ? Transform.translate(
+                                                      ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
                                                           child: Image.network(
                                                               imageUrl),
                                                           offset:
-                                                              Offset(10, 1))
+                                                              Offset(1, 1)))
                                                       : null),
                                             ],
                                           ),
-                                        ))),
-                                background: Container(
-                                    color: Colors.red,
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 15),
-                                    alignment: Alignment.centerRight,
-                                    child: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    )));
-                          },
-                        ));
+                                        )
+                                      )
+                                    )
+                                  ),
+                                  background: Container(
+                                      color: Colors.red,
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 15),
+                                      alignment: Alignment.centerRight,
+                                      child: Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                      )
+                                  )
+                                );
+                              },
+                            )
+                        );
                       },
                     ),
                   ],
                 ),
               ),
-            )],
-          ),
-        ));
+            )
+          ],
+        ),
+      )
+    );
   }
 }
 
