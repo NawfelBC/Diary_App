@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
                   textController.clear(),
                   FocusScope.of(context).requestFocus(FocusNode()),
                   setState(() {
-                    finalurl = '';
+                    finalurl = null;
                   })
                 }
             ],
@@ -222,6 +222,7 @@ class _MyAppState extends State<MyApp> {
                                           TextButton(
                                               onPressed: () {
                                                 if (finalurl != null){
+                                                  print('1');
                                                   FirebaseFirestore.instance
                                                   .collection('posts')
                                                   .doc(snapshot.data!.docs[index].id)
@@ -231,12 +232,13 @@ class _MyAppState extends State<MyApp> {
                                                     'edited': 'Y'
                                                   });
                                                   setState(() {
-                                                    finalurl = '';
+                                                    finalurl = null;
                                                   });
                                                   _textFieldController.clear();
                                                   Navigator.of(context)
                                                     .pop(false);
                                                 } else if (finalurl == null){
+                                                  print('2');
                                                   FirebaseFirestore.instance
                                                   .collection('posts')
                                                   .doc(snapshot.data!.docs[index].id)
@@ -245,15 +247,16 @@ class _MyAppState extends State<MyApp> {
                                                     'edited': 'Y'
                                                   });
                                                   setState(() {
-                                                    finalurl = '';
+                                                    finalurl = null;
                                                   });
                                                   _textFieldController.clear();
                                                   Navigator.of(context)
                                                     .pop(false);
                                                 }
                                                 else{
+                                                  print('3');
                                                   setState(() {
-                                                    finalurl = '';
+                                                    finalurl = null;
                                                   });
                                                   Navigator.of(context)
                                                     .pop(false);
