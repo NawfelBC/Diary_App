@@ -19,7 +19,7 @@ class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
-  String email = '';
+  String username = '';
   String password = '';
   String error = '';
 
@@ -57,11 +57,11 @@ class _RegisterState extends State<Register> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Email'),
-                validator: (val) => val!.isEmpty || !val.contains('@')  ? 'Enter a valid email' : null,
+                decoration: textInputDecoration.copyWith(hintText: 'Username'),
+                validator: (val) => val!.isEmpty  ? 'Enter a valid username' : null,
                 onChanged: (val) {
                   setState(() {
-                    email = val;
+                    username = val + '@diary.com';
                   });
                 }
               ),
@@ -88,10 +88,10 @@ class _RegisterState extends State<Register> {
                     setState(() {
                       loading = true;
                     });
-                    dynamic result = await _auth.registerWithEmailAndPassword(email, password);
+                    dynamic result = await _auth.registerWithEmailAndPassword(username, password);
                     if (result == null) {
                       setState(() {
-                        error = 'Please supply a valid email';
+                        error = 'Please supply a valid username';
                         loading = false;
                       });
                     }

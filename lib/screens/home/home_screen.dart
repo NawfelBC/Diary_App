@@ -37,11 +37,19 @@ class _HomeScreenState extends State<HomeScreen> {
   var temp;
   final AuthService _auth = AuthService();
   String error = '';
+  String postId = '';
+  String currentUsername = '';
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
+    Future<void> setUsername() async {
+      setState(() async {
+        currentUsername = await getUsername(idofuser);
+      });
+    }
+    setUsername();
     return MaterialApp(
         title: 'Flutter Firebase Demo',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -95,21 +103,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 { 
                   setState(() {
                       error = '';
+                      postId = DateTime.now().toString() + idofuser;
                     }),
-                  FirebaseFirestore.instance.collection(idofuser).add({
+                  FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
                     'text': textController.text,
                     'timestamp': Timestamp.fromDate(DateTime.now()),
                     'imageUrl': finalurl != null ? finalurl : '',
                     'edited': 'N',
                     'userId': idofuser,
+                    'username': currentUsername,
                   }),
-                  FirebaseFirestore.instance.collection('all_posts').add({
+                  FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
                     //'creator id': ,
                     'text': textController.text,
                     'timestamp': Timestamp.fromDate(DateTime.now()),
                     'imageUrl': finalurl != null ? finalurl : '',
                     'edited': 'N',
                     'userId': idofuser,
+                    'username': currentUsername,
                   }),
                   textController.clear(),
                   FocusScope.of(context).requestFocus(FocusNode()),
@@ -196,7 +207,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             final textContent = (docData['text'] as String);
                             final imageUrl = (docData['imageUrl'] as String);
                             final edition = (docData['edited'] as String);
-                            return Dismissible(
+                            final userId = (docData['userId'] as String);
+                            final username = (docData['username'] as String);
+                            // print('userId ' + userId);
+                            // print('idofuser ' + idofuser);
+                            return userId == idofuser ? Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
                                 // confirmDismiss:
@@ -240,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   // });
                                 },
                                 child: Container(
-                                    child : GestureDetector(
+                                  child : GestureDetector(
                                     onTap: () => showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
@@ -263,9 +278,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                           TextButton(
                                               onPressed: () {
                                                 if (finalurl != null){
-                                                  print('1');
                                                   FirebaseFirestore.instance
                                                   .collection(idofuser)
+                                                  .doc(snapshot.data!.docs[index].id)
+                                                  .update({ 
+                                                    'text': _textFieldController.text,
+                                                    'imageUrl': finalurl,
+                                                    'edited': 'Y'
+                                                  });
+                                                  FirebaseFirestore.instance
+                                                  .collection('all_posts')
                                                   .doc(snapshot.data!.docs[index].id)
                                                   .update({ 
                                                     'text': _textFieldController.text,
@@ -279,9 +301,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   Navigator.of(context)
                                                     .pop(false);
                                                 } else if (finalurl == null){
-                                                  print('2');
                                                   FirebaseFirestore.instance
                                                   .collection(idofuser)
+                                                  .doc(snapshot.data!.docs[index].id)
+                                                  .update({ 
+                                                    'text': _textFieldController.text,
+                                                    'edited': 'Y'
+                                                  });
+                                                  FirebaseFirestore.instance
+                                                  .collection('all_posts')
                                                   .doc(snapshot.data!.docs[index].id)
                                                   .update({ 
                                                     'text': _textFieldController.text,
@@ -338,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Text(textContent,
+                                                      child: Text(username + '\n\n' + textContent,
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
                                                       offset: Offset(1, 1))),
@@ -365,22 +393,62 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ],
                                           ),
                                         )
-                                      )
                                     )
-                                  ),
-                                  background: Container(
-                                      color: Colors.red,
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 15),
-                                      alignment: Alignment.centerRight,
-                                      child: Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      )
-                                  )
-                                );
+                                  ),  
+                                ),
+                                background: Container(
+                                    color: Colors.red,
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 15),
+                                    alignment: Alignment.centerRight,
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                    )
+                                )
+                              ) : Card(
+                                        margin: EdgeInsets.all(10),
+                                        color: Color.fromRGBO(128, 104, 104, 2),
+                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
+                                        //Colors.primaries[Random().nextInt(Colors.primaries.length)],
+                                        //shadowColor: Colors.white,
+                                        elevation: 7,
+                                        child: Container(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              ListTile(
+                                                  title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
+                                                      child: Text(username + '\n\n' + textContent,
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white)),
+                                                      offset: Offset(1, 1))),
+                                                  trailing: edition == 'Y'
+                                                  ? Text(
+                                                      '               Edited\n' + DateFormat.yMMMd()
+                                                          .add_jm()
+                                                          .format(dateTime),
+                                                      style: TextStyle(
+                                                          fontSize: 12, color: Colors.white))
+                                                  : Text(
+                                                      DateFormat.yMMMd()
+                                                          .add_jm()
+                                                          .format(dateTime),
+                                                      style: TextStyle(
+                                                          fontSize: 12, color: Colors.white)),
+                                                  subtitle: imageUrl != ""
+                                                      ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
+                                                          child: Image.network(
+                                                              imageUrl),
+                                                          offset:
+                                                              Offset(1, 1)))
+                                                      : null),
+                                            ],
+                                          ),
+                                        )
+                                    );
                               },
-                            )
+                            ),
                         );
                       },
                     ),
@@ -407,4 +475,11 @@ Future<String> uploadimage() async {
   await ref.putFile(File(pickedImage.path));
   String imageUrl = await ref.getDownloadURL();
   return imageUrl;
+}
+
+Future<String> getUsername(String id) async{
+  var username;
+  DocumentSnapshot ds = await FirebaseFirestore.instance.collection('usernames_list').doc(id).get();
+  username = ds['username'];
+  return username;
 }

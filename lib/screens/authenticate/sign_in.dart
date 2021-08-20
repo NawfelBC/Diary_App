@@ -19,7 +19,7 @@ class _SignInState extends State<SignIn> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
-  String email = '';
+  String username = '';
   String password = '';
   String error = '';
 
@@ -57,18 +57,18 @@ class _SignInState extends State<SignIn> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Email'),
-                validator: (val) => val!.isEmpty || !val.contains('@')  ? 'Enter a valid email' : null,
+                decoration: textInputDecoration.copyWith(hintText: 'Username'),
+                validator: (val) => val!.isEmpty  ? 'Enter a valid username' : null,
                 onChanged: (val) {
                   setState(() {
-                    email = val;
+                    username = val+'@diary.com';
                   });
                 }
               ),
               SizedBox(height: 20.0),
               TextFormField(
                 decoration: textInputDecoration.copyWith(hintText: 'Password'),
-                validator: (val) => val!.length < 6 ? 'Enter a password of at least 6 characters' : null,
+                validator: (val) => val!.isEmpty ? 'Enter a password' : null,
                 obscureText: true,
                 onChanged: (val) {
                   setState(() {
@@ -88,7 +88,7 @@ class _SignInState extends State<SignIn> {
                     setState(() {
                       loading = true;
                     });
-                    dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                    dynamic result = await _auth.signInWithEmailAndPassword(username, password);
                     if (result == null) {
                       setState(() {
                         error = 'Could not sign in with those credentials';

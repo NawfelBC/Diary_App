@@ -37,11 +37,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   var temp;
   final AuthService _auth = AuthService();
   String error = '';
+  String postId = '';
+  String currentUsername = '';
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
+    Future<void> aze() async {
+      setState(() async {
+        currentUsername = await getUsername(idofuser);
+      });
+    }
+    aze();
     return MaterialApp(
         title: 'Flutter Firebase Demo',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -91,22 +99,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 { 
                   setState(() {
                       error = '';
+                      postId = DateTime.now().toString() + idofuser;
                     }),
-                  FirebaseFirestore.instance.collection(idofuser).add({
+                  FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
                     //'creator id': ,
                     'text': textController.text,
                     'timestamp': Timestamp.fromDate(DateTime.now()),
                     'imageUrl': finalurl != null ? finalurl : '',
                     'edited': 'N',
                     'userId': idofuser,
+                    'username': currentUsername,
                   }),
-                  FirebaseFirestore.instance.collection('all_posts').add({
+                  FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
                     //'creator id': ,
                     'text': textController.text,
                     'timestamp': Timestamp.fromDate(DateTime.now()),
                     'imageUrl': finalurl != null ? finalurl : '',
                     'edited': 'N',
                     'userId': idofuser,
+                    'username': currentUsername,
                   }),
                   textController.clear(),
                   FocusScope.of(context).requestFocus(FocusNode()),
@@ -193,6 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             final textContent = (docData['text'] as String);
                             final imageUrl = (docData['imageUrl'] as String);
                             final edition = (docData['edited'] as String);
+                            final username = (docData['username'] as String);
                             return Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
@@ -226,6 +238,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   snapshot.data!.docs.remove(index);
                                   FirebaseFirestore.instance
                                       .collection(idofuser)
+                                      .doc(snapshot.data!.docs[index].id)
+                                      .delete();
+                                  FirebaseFirestore.instance
+                                      .collection('all_posts')
                                       .doc(snapshot.data!.docs[index].id)
                                       .delete();
                                   // setState(() {
@@ -331,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Text(textContent,
+                                                      child: Text(username + '\n\n' + textContent,
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
                                                       offset: Offset(1, 1))),
@@ -400,4 +416,11 @@ Future<String> uploadimage() async {
   await ref.putFile(File(pickedImage.path));
   String imageUrl = await ref.getDownloadURL();
   return imageUrl;
+}
+
+Future<String> getUsername(String id) async{
+  var username;
+  DocumentSnapshot ds = await FirebaseFirestore.instance.collection('usernames_list').doc(id).get();
+  username = ds['username'];
+  return username;
 }

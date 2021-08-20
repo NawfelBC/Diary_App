@@ -41,8 +41,8 @@ class AuthService {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
-      FirebaseFirestore.instance.collection('collections_list').add({
-        'id': user!.uid,
+      FirebaseFirestore.instance.collection('usernames_list').doc(user!.uid).set({
+        'username': email.split('@diary.com')[0],
       });
       return _userFromFirebaseUser(user);
     } catch(e) {
