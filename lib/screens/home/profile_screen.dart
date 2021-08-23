@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
+import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
 
 import 'home_screen.dart';
@@ -93,10 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icon(Icons.ac_unit, color: Colors.white), 
                 label: Text('Feed', style: TextStyle(color: Colors.white)),
                 onPressed: () {
-                  var route = new MaterialPageRoute(
-                    builder: (BuildContext context) => new HomeScreen(),
-                  );
-                  Navigator.of(context).push(route);
+                  Navigator.pop(context);
                 },
               ),
             leadingWidth: 100,
@@ -106,11 +104,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: Text('Logout', style: TextStyle(color: Colors.white)),
                 onPressed: () async {
                   await _auth.signOut();
+                  // var route = new MaterialPageRoute(
+                  //   builder: (BuildContext context) => new Wrapper(),
+                  // );
+                  // Navigator.of(context).push(route);
                 },
               ),
             ],
             title: Align(
-              alignment: Alignment(0.7,2),
+              alignment: Alignment(0.1,2),
               child: Text(
                 'diary'.toUpperCase(),
                 style: GoogleFonts.gruppo(
@@ -120,52 +122,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: Color.fromRGBO(124, 144, 153, 2),
-            onPressed: () async => [
-              if ((textController.text == "") & (finalurl == null || finalurl == '')){
-               setState(() {
-                      error = 'Nothing to post';
-                    }),
-              }
-              else
-                { 
-                  setState(() {
-                      error = '';
-                      postId = DateTime.now().toString() + idofuser;
-                    }),
-                  FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
-                    //'creator id': ,
-                    'text': textController.text,
-                    'timestamp': Timestamp.fromDate(DateTime.now()),
-                    'imageUrl': finalurl != null ? finalurl : '',
-                    'edited': 'N',
-                    'userId': idofuser,
-                    'username': currentUsername,
-                  }),
-                  FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
-                    //'creator id': ,
-                    'text': textController.text,
-                    'timestamp': Timestamp.fromDate(DateTime.now()),
-                    'imageUrl': finalurl != null ? finalurl : '',
-                    'edited': 'N',
-                    'userId': idofuser,
-                    'username': currentUsername,
-                  }),
-                  textController.clear(),
-                  FocusScope.of(context).requestFocus(FocusNode()),
-                  setState(() {
-                    finalurl = null;
-                  })
-                }
-            ],
-            label: Text(
-              'Send',
-              style: TextStyle(fontSize: 22),
-            ),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12))),
           ),
           body: ListView(
             children: [ Container(
@@ -231,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
-                      padding: EdgeInsets.all(12),
+                      //padding: EdgeInsets.all(12),
                       child: Text('Feed', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
@@ -399,23 +355,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
                                               ListTile(
-                                                  title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
-                                                          style: TextStyle(
-                                                              fontSize: 16, color: Colors.white)),
-                                                              Transform.translate(
-                                                                child: currentProfileurl != '' ? ClipRRect(
+                                                  dense: true,
+                                                  leading: currentProfileurl != '' ? ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
                                                                     currentProfileurl, width: 40))
-                                                                    : ClipRRect(
+                                                                 : ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40)),
-                                                                offset:
-                                                                    Offset(-100, -60)
-                                                              ),]),
-                                                      offset: Offset(1, -4))),
+                                                  title: Text('\n' + username,
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white)),
+                                                  subtitle: imageUrl != '' 
+                                                          ? Column(
+                                                            children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),   
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                              imageUrl)))
+                                                          ])
+                                                          : Column(children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),
+                                                      ]),              
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -428,32 +398,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           .add_jm()
                                                           .format(dateTime),
                                                       style: TextStyle(
-                                                          fontSize: 12, color: Colors.white)),
-                                                  subtitle: imageUrl != ""
-                                                      ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: ClipRRect(
-                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                child: Image.network(
-                                                              imageUrl)),
-                                                          offset:
-                                                              Offset(1, 1)))
-                                                      : null),
-                                            ],
+                                                          fontSize: 11, color: Colors.white)),
+                                                  isThreeLine: true,
+                                                  
+                                              )],
                                           ),
                                         )
                                       )
                                     )
                                   ),
                                   background: Container(
-                                      color: Colors.red,
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 15),
-                                      alignment: Alignment.centerRight,
-                                      child: Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      )
-                                  )
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                                    color: Color.fromRGBO(120, 60, 60, 1),
+                                  ),
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 15),
+                                    alignment: Alignment.centerRight,
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                      size: 30,
+                                    )
+                                )
                                 );
                               },
                             )

@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/home/profile_screen.dart';
+import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,14 +41,14 @@ class _HomeScreenState extends State<HomeScreen> {
   String postId = '';
   String currentUsername = '';
   String currentProfileurl = '';
-  //var allPostsId;
+  
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
     
-    // //Solution where delete/edit works but not pictures
+    
     Future<void> setUsername() async {
       setState(() async {
         currentUsername = await getUsername(idofuser);
@@ -60,21 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     setUsername();
     setProfileurl();
-
-    // getAllPostsId().then((x) => {
-    //   allPostsId = x
-    // });
-    
-    //Solution where pictures works but not delete/edit
-    // getUsername(idofuser).then((result) {   
-    //   getProfileurl(idofuser).then((result2) { 
-    //     setState(() {
-    //       currentUsername = result;
-    //       currentProfileurl = result2;
-    //     }); 
-    //   });  
-    // });
-    //print('currentProfileurl: ' + currentProfileurl);
     return MaterialApp(
         title: 'Flutter Firebase Demo',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -84,7 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
             elevation: 0,
             leading:
               TextButton.icon(
-                icon: Icon(Icons.ac_unit, color: Colors.white), 
+                // icon: ClipRRect(borderRadius: BorderRadius.circular(12.0), child: Image.network(currentProfileurl, width: 30)),
+                icon: Icon(Icons.ac_unit, color: Colors.white),
                 label: Text('Profile', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   var route = new MaterialPageRoute(
@@ -100,15 +87,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: Text('Logout', style: TextStyle(color: Colors.white)),
                 onPressed: () async {
                   await _auth.signOut();
+                  // var route = new MaterialPageRoute(
+                  //   builder: (BuildContext context) => new Wrapper(),
+                  // );
+                  // Navigator.of(context).push(route);
                 },
               ),
             ],
-            // leading: Icon(
-            //   Icons.ac_unit,
-            //   color: Colors.black,
-            // ),
+           
             title: Align(
-              alignment: Alignment(0.7,2),
+              alignment: Alignment(0.1,2),
               child: Text(
                 'diary'.toUpperCase(),
                 style: GoogleFonts.gruppo(
@@ -119,53 +107,53 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: Color.fromRGBO(124, 144, 153, 2),
-            onPressed: () async => [
-              if ((textController.text == "") & (finalurl == null || finalurl == '')){
-               setState(() {
-                      error = 'Nothing to post';
-                    }),
-              }
-              else
-                { 
-                  setState(() {
-                      error = '';
-                      postId = DateTime.now().toString() + idofuser;
-                    }),
-                  FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
-                    'text': textController.text,
-                    'timestamp': Timestamp.fromDate(DateTime.now()),
-                    'imageUrl': finalurl != null ? finalurl : '',
-                    'edited': 'N',
-                    'userId': idofuser,
-                    'username': currentUsername,
-                    'profileurl': currentProfileurl,
-                  }),
-                  FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
-                    //'creator id': ,
-                    'text': textController.text,
-                    'timestamp': Timestamp.fromDate(DateTime.now()),
-                    'imageUrl': finalurl != null ? finalurl : '',
-                    'edited': 'N',
-                    'userId': idofuser,
-                    'username': currentUsername,
-                    'profileurl': currentProfileurl,
-                  }),
-                  textController.clear(),
-                  FocusScope.of(context).requestFocus(FocusNode()),
-                  setState(() {
-                    finalurl = null;
-                  })
-                }
-            ],
-            label: Text(
-              'Send',
-              style: TextStyle(fontSize: 22),
-            ),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12))),
-          ),
+          // floatingActionButton: FloatingActionButton.extended(
+          //   backgroundColor: Color.fromRGBO(102, 124, 111, 2),
+          //   onPressed: () async => [
+          //     if ((textController.text == "") & (finalurl == null || finalurl == '')){
+          //      setState(() {
+          //             error = 'Nothing to post';
+          //           }),
+          //     }
+          //     else
+          //       { 
+          //         setState(() {
+          //             error = '';
+          //             postId = DateTime.now().toString() + idofuser;
+          //           }),
+          //         FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
+          //           'text': textController.text,
+          //           'timestamp': Timestamp.fromDate(DateTime.now()),
+          //           'imageUrl': finalurl != null ? finalurl : '',
+          //           'edited': 'N',
+          //           'userId': idofuser,
+          //           'username': currentUsername,
+          //           'profileurl': currentProfileurl,
+          //         }),
+          //         FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
+                    
+          //           'text': textController.text,
+          //           'timestamp': Timestamp.fromDate(DateTime.now()),
+          //           'imageUrl': finalurl != null ? finalurl : '',
+          //           'edited': 'N',
+          //           'userId': idofuser,
+          //           'username': currentUsername,
+          //           'profileurl': currentProfileurl,
+          //         }),
+          //         textController.clear(),
+          //         FocusScope.of(context).requestFocus(FocusNode()),
+          //         setState(() {
+          //           finalurl = null;
+          //         })
+          //       }
+          //   ],
+          //   label: Text(
+          //     'Send',
+          //     style: TextStyle(fontSize: 22),
+          //   ),
+          //   shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.all(Radius.circular(12))),
+          // ),
           body: ListView(
             children: [ Container(
               child: Container(
@@ -182,8 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: InputDecoration(
                               fillColor: Color.fromRGBO(50,50,50, 2),
                               filled: true,
-                              // isDense: true,
-                              // contentPadding: EdgeInsets.all(40),
+                              
                               suffixIcon: IconButton(
                                 icon: Icon(Icons.add_a_photo),
                                 color: Colors.white,
@@ -192,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   uploadimage().then((imageUrl) {
                                     setState(() {
                                       finalurl = imageUrl;
+                                      error = '';
                                     });
                                   });
                                 },
@@ -204,16 +192,62 @@ class _HomeScreenState extends State<HomeScreen> {
                               hintStyle: TextStyle(color: Colors.white)
                             ),
                           ),
+                         Transform.translate(child : 
+                         ElevatedButton(
+                           child: Text(
+                            'Send',
+                            style: TextStyle(fontSize: 22),
+                          ),
+                          style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                          onPressed: () async => [
+                            if ((textController.text == "") & (finalurl == null || finalurl == '')){
+                            setState(() {
+                                    error = 'Nothing to post';
+                                  }),
+                            }
+                            else
+                              { 
+                                setState(() {
+                                    error = '';
+                                    postId = DateTime.now().toString() + idofuser;
+                                  }),
+                                FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
+                                  'text': textController.text,
+                                  'timestamp': Timestamp.fromDate(DateTime.now()),
+                                  'imageUrl': finalurl != null ? finalurl : '',
+                                  'edited': 'N',
+                                  'userId': idofuser,
+                                  'username': currentUsername,
+                                  'profileurl': currentProfileurl,
+                                }),
+                                FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
+                                  
+                                  'text': textController.text,
+                                  'timestamp': Timestamp.fromDate(DateTime.now()),
+                                  'imageUrl': finalurl != null ? finalurl : '',
+                                  'edited': 'N',
+                                  'userId': idofuser,
+                                  'username': currentUsername,
+                                  'profileurl': currentProfileurl,
+                                }),
+                                textController.clear(),
+                                FocusScope.of(context).requestFocus(FocusNode()),
+                                setState(() {
+                                  finalurl = null;
+                                })
+                              }
+                          ],
+                        ),offset: Offset(150,1))
                       ]),
                     ),
                     Container(
                       padding: EdgeInsets.only(right: 200),
-                      child : Text((finalurl != '' && finalurl != null) ? 'Image successfully uploaded !' : '', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14))),
-                    //SizedBox(height: 1),
+                      child : finalurl != '' && finalurl != null ? Transform.translate(child: Stack(alignment: Alignment(1.5,1), children: <Widget> [Text('Image successfully uploaded !', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14)),
+                    Image.network(finalurl,width: 30)]),offset:Offset(0,-35)) : Text('')),
                     Text(error,style: TextStyle(color: Colors.red, fontSize: 14.0)),
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
-                      padding: EdgeInsets.all(12),
+                      //padding: EdgeInsets.all(12),
                       child: Text('Explore', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
@@ -241,8 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final edition = (docData['edited'] as String);
                             final userId = (docData['userId'] as String);
                             final username = (docData['username'] as String);
-                            // print('userId ' + userId);
-                            // print('idofuser ' + idofuser);
+                            
                             return userId == idofuser ? Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
@@ -397,12 +430,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
                                               ListTile(
-                                                  title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
-                                                          style: TextStyle(
-                                                              fontSize: 16, color: Colors.white)),
-                                                              Transform.translate(
-                                                                child: username == currentUsername ? ClipRRect(
+                                                  dense: true,
+                                                  leading: username == currentUsername ? ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
                                                                     currentProfileurl, width: 40))
@@ -412,10 +441,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     docData['profileurl'], width: 40))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
-                                                                offset:
-                                                                    Offset(-100, -60)
-                                                              ),]),
-                                                      offset: Offset(1, -4))),
+                                                  title: Text('\n' + username,
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white)),
+                                                  subtitle: imageUrl != '' 
+                                                          ? Column(
+                                                            children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),   
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                              imageUrl)))
+                                                          ])
+                                                          : Column(children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),
+                                                      ]),              
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -428,17 +475,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           .add_jm()
                                                           .format(dateTime),
                                                       style: TextStyle(
-                                                          fontSize: 12, color: Colors.white)),
-                                                  subtitle: imageUrl != ""
-                                                      ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: ClipRRect(
-                                                                borderRadius: BorderRadius.circular(12.0),
-                                                                child:Image.network(
-                                                              imageUrl)),
-                                                          offset:
-                                                              Offset(1, 1)))
-                                                      : null),
-                                            ],
+                                                          fontSize: 11, color: Colors.white)),
+                                                  isThreeLine: true,
+                                                  
+                                              )],
                                           ),
                                         )
                                     )
@@ -470,12 +510,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
                                               ListTile(
-                                                  title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
-                                                          style: TextStyle(
-                                                              fontSize: 16, color: Colors.white)),
-                                                              Transform.translate(
-                                                                child: username == currentUsername ? ClipRRect(
+                                                  dense: true,
+                                                  leading: username == currentUsername ? ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
                                                                     currentProfileurl, width: 40))
@@ -485,10 +521,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     docData['profileurl'], width: 40))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
-                                                                offset:
-                                                                    Offset(-100, -60)
-                                                              ),]),
-                                                      offset: Offset(1, -4))),
+                                                  title: Text('\n' + username,
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white)),
+                                                  subtitle: imageUrl != '' 
+                                                          ? Column(
+                                                            children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),   
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                              imageUrl)))
+                                                          ])
+                                                          : Column(children: <Widget> [
+                                                          Align(alignment: Alignment.centerLeft, child:
+                                                          Text('\n' + textContent + '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 16, color: Colors.white))),
+                                                      ]),              
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -501,17 +555,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           .add_jm()
                                                           .format(dateTime),
                                                       style: TextStyle(
-                                                          fontSize: 12, color: Colors.white)),
-                                                  subtitle: imageUrl != ""
-                                                      ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: ClipRRect(
-                                                                borderRadius: BorderRadius.circular(10.0),
-                                                                child: Image.network(
-                                                              imageUrl)),
-                                                          offset:
-                                                              Offset(1, 1)))
-                                                      : null),
-                                            ],
+                                                          fontSize: 11, color: Colors.white)),
+                                                  isThreeLine: true,
+                                                  
+                                              )],
                                           ),
                                         )
                                     );
