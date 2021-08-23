@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String postId = '';
   String currentUsername = '';
   String currentProfileurl = '';
+  //var allPostsId;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
@@ -60,6 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setUsername();
     setProfileurl();
 
+    // getAllPostsId().then((x) => {
+    //   allPostsId = x
+    // });
+    
     //Solution where pictures works but not delete/edit
     // getUsername(idofuser).then((result) {   
     //   getProfileurl(idofuser).then((result2) { 
@@ -175,6 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(color: Colors.white),
                             controller: textController,
                             decoration: InputDecoration(
+                              fillColor: Color.fromRGBO(50,50,50, 2),
+                              filled: true,
                               // isDense: true,
                               // contentPadding: EdgeInsets.all(40),
                               suffixIcon: IconButton(
@@ -189,8 +196,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   });
                                 },
                               ),
-                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
-                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
+                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
+                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
                               labelText: 'Post something',
                               labelStyle: TextStyle(fontSize: 15,color: Colors.white),
                               hintText: 'What’s up ?',
@@ -207,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
                       padding: EdgeInsets.all(12),
-                      child: Text('Your feed', style: GoogleFonts.alegreya(color: Colors.white, fontSize: 26)))),
+                      child: Text('Explore', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
@@ -380,8 +387,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );}),
                                     child: Card(
                                         margin: EdgeInsets.all(10),
-                                        color: Color.fromRGBO(128, 104, 104, 2),
-                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
+                                        color: Color.fromRGBO(50,50,50, 2),
+                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
                                         //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                         //shadowColor: Colors.white,
                                         elevation: 7,
@@ -395,10 +402,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
                                                               Transform.translate(
-                                                                child: username == currentUsername ? Image.network(
-                                                                    currentProfileurl, width: 40)
-                                                                 : snapshot.data!.docs[index]['profileurl'] != '' ? Image.network(
-                                                                    snapshot.data!.docs[index]['profileurl'], width: 40)
+                                                                child: username == currentUsername ? ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    currentProfileurl, width: 40))
+                                                                 : docData['profileurl'] != '' ? ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    docData['profileurl'], width: 40))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
                                                                 offset:
@@ -420,8 +431,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           fontSize: 12, color: Colors.white)),
                                                   subtitle: imageUrl != ""
                                                       ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: Image.network(
-                                                              imageUrl),
+                                                          child: ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child:Image.network(
+                                                              imageUrl)),
                                                           offset:
                                                               Offset(1, 1)))
                                                       : null),
@@ -432,19 +445,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),  
                                 ),
                                 background: Container(
-                                    color: Colors.red,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                                    color: Color.fromRGBO(120, 60, 60, 1),
+                                  ),
                                     margin:
                                         EdgeInsets.symmetric(horizontal: 15),
                                     alignment: Alignment.centerRight,
                                     child: Icon(
                                       Icons.delete,
                                       color: Colors.white,
+                                      size: 30,
                                     )
                                 )
                               ) : Card(
                                         margin: EdgeInsets.all(10),
-                                        color: Color.fromRGBO(128, 104, 104, 2),
-                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
+                                        color: Color.fromRGBO(50,50,50, 2),
+                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1), borderRadius: BorderRadius.all(Radius.circular(10))),
                                         //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                         //shadowColor: Colors.white,
                                         elevation: 7,
@@ -458,10 +475,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
                                                               Transform.translate(
-                                                                child: username == currentUsername ? Image.network(
-                                                                    currentProfileurl, width: 40)
-                                                                 : snapshot.data!.docs[index]['profileurl'] != '' ? Image.network(
-                                                                    snapshot.data!.docs[index]['profileurl'], width: 40)
+                                                                child: username == currentUsername ? ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    currentProfileurl, width: 40))
+                                                                 : docData['profileurl'] != '' ? ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    docData['profileurl'], width: 40))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
                                                                 offset:
@@ -483,8 +504,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           fontSize: 12, color: Colors.white)),
                                                   subtitle: imageUrl != ""
                                                       ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: Image.network(
-                                                              imageUrl),
+                                                          child: ClipRRect(
+                                                                borderRadius: BorderRadius.circular(10.0),
+                                                                child: Image.network(
+                                                              imageUrl)),
                                                           offset:
                                                               Offset(1, 1)))
                                                       : null),
@@ -535,3 +558,15 @@ Future<String> getProfileurl(String id) async{
   profileurl = ds['profileurl'];
   return profileurl;
 }
+
+// getAllPostsId() async {
+//   var doclist = [];
+//   var values; 
+//   await FirebaseFirestore.instance.collection('all_posts').get().then((querySnapshot) => {
+//     values = querySnapshot.docs,
+//     values.forEach((doc) => {
+//         doclist.add(doc.id),
+//     })}
+//   );
+//   return doclist;
+// }

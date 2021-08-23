@@ -46,11 +46,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _auth = AuthService();
   String error = '';
   String postId = '';
+  var allPostsId;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
+
+    getAllPostsId().then((x) => {
+      allPostsId = x
+    });
 
     // //Solution where delete/edit works but not pictures
     // Future<void> setUsername() async {
@@ -171,7 +176,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: EdgeInsets.all(8),
                       child: Column(children: <Widget>[
                         Column(children: [
-                        IconButton(icon : Icon(Icons.add_a_photo),
+                        IconButton(icon : new Icon(Icons.add_a_photo),
+                                //alignment: Alignment(-20,5),
                                 color: Colors.white,
                                 onPressed: () {
                                   print('pressed');
@@ -182,19 +188,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     });
                                     FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
                                     'profileurl': profileurl,
-                                  });
+                                    });
+                                    allPostsId.forEach((element) async {
+                                      DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
+                                      String x = '';
+                                      await documentReference.get().then((snapshot) {
+                                        x = snapshot['username'].toString();
+                                      });
+                                      if (x == currentUsername){
+                                        FirebaseFirestore.instance.collection('all_posts').doc(element).update({
+                                        'profileurl': profileurl,
+                                        });
+                                      }
+                                    });
                                   });
                                 },
                                 ),                             
-                        Transform.translate(child:
-                          Text(currentUsername, style: GoogleFonts.alegreya(color: Colors.white, fontSize: 26)),
-                          offset:Offset(100,20)
-                        ),
+                        Column(children: <Widget>[
+                          new Transform.translate(child : Text(currentUsername, style: GoogleFonts.alegreya(color: Colors.white, fontSize: 30)), offset:Offset(100,20)),
+                          new Transform.translate(child : Text('Joined Diary : ' + user.metadata.creationTime.toString().split(' ')[0], 
+                                                  style: GoogleFonts.alegreya(color: Colors.white, fontSize: 15)), offset:Offset(100,40)),
+                          ]),
+                          
                           ],
                         ), 
                           currentProfileurl != '' ? Transform.translate(
-                              child: Image.network(
-                                  currentProfileurl, width: 150),
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  child: Image.network(
+                                  currentProfileurl, width: 150)),
                               offset:
                                   Offset(-75, -50)
                             )
@@ -210,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
                       padding: EdgeInsets.all(12),
-                      child: Text('Your posts', style: GoogleFonts.alegreya(color: Colors.white, fontSize: 26)))),
+                      child: Text('Feed', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
@@ -367,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     );}),
                                     child: Card(
                                         margin: EdgeInsets.all(10),
-                                        color: Color.fromRGBO(128, 104, 104, 2),
+                                        color: Color.fromRGBO(50,50,50, 2),
                                         shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
                                         //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                         //shadowColor: Colors.white,
@@ -382,10 +404,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
                                                               Transform.translate(
-                                                                child: currentProfileurl != '' ? Image.network(
-                                                                    currentProfileurl, width: 40)
-                                                                    : Image.network(
-                                                                    'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
+                                                                child: currentProfileurl != '' ? ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    currentProfileurl, width: 40))
+                                                                    : ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                                    'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40)),
                                                                 offset:
                                                                     Offset(-100, -60)
                                                               ),]),
@@ -405,8 +431,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           fontSize: 12, color: Colors.white)),
                                                   subtitle: imageUrl != ""
                                                       ? Padding(padding: EdgeInsets.only(top:25), child : Transform.translate(
-                                                          child: Image.network(
-                                                              imageUrl),
+                                                          child: ClipRRect(
+                                                                borderRadius: BorderRadius.circular(12.0),
+                                                                child: Image.network(
+                                                              imageUrl)),
                                                           offset:
                                                               Offset(1, 1)))
                                                       : null),
@@ -469,4 +497,16 @@ Future<String> getProfileurl(String id) async{
   DocumentSnapshot ds = await FirebaseFirestore.instance.collection(id).doc('profileurl').get();
   profileurl = ds['profileurl'];
   return profileurl;
+}
+
+getAllPostsId() async {
+  var doclist = [];
+  var values; 
+  await FirebaseFirestore.instance.collection('all_posts').get().then((querySnapshot) => {
+    values = querySnapshot.docs,
+    values.forEach((doc) => {
+        doclist.add(doc.id),
+    })}
+  );
+  return doclist;
 }
