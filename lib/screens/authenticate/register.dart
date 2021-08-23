@@ -73,6 +73,7 @@ class _RegisterState extends State<Register> {
                 onChanged: (val) {
                   setState(() {
                     password = val;
+                    error = '';
                   });
                 }
               ),
@@ -87,11 +88,12 @@ class _RegisterState extends State<Register> {
                   if (_formKey.currentState!.validate()) {
                     setState(() {
                       loading = true;
+                      
                     });
                     dynamic result = await _auth.registerWithEmailAndPassword(username, password);
                     if (result == null) {
                       setState(() {
-                        error = 'Please supply a valid username';
+                        error = 'Username not valid or already taken';
                         loading = false;
                       });
                     }

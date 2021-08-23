@@ -12,14 +12,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/services/auth.dart';
 
+import 'home_screen.dart';
+
 class ProfileScreen extends StatefulWidget {
+  final String currentUsername;
+  final String currentProfileurl;
+  ProfileScreen({Key? key, required this.currentUsername,required this.currentProfileurl}) : super (key:key);
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
-  final Function toggleView;
-  ProfileScreen({required this.toggleView});
+  _ProfileScreenState createState() => _ProfileScreenState(currentUsername,currentProfileurl);
+  
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String currentUsername;
+  String currentProfileurl;
+  _ProfileScreenState(this.currentUsername,this.currentProfileurl);
   @override
   void initState() {
     super.initState();
@@ -32,24 +39,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
   var finalurl;
+  var profileurl;
   TextEditingController textController = new TextEditingController();
   bool checker = false;
   var temp;
   final AuthService _auth = AuthService();
   String error = '';
   String postId = '';
-  String currentUsername = '';
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
-    Future<void> aze() async {
-      setState(() async {
-        currentUsername = await getUsername(idofuser);
-      });
-    }
-    aze();
+
+    // //Solution where delete/edit works but not pictures
+    // Future<void> setUsername() async {
+    //   setState(() async {
+    //     currentUsername = await getUsername(idofuser);
+    //   });
+    // }
+    // Future<void> setProfileurl() async {
+    //   setState(() async {
+    //     currentProfileurl = await getProfileurl(idofuser);
+    //   });
+    // }
+    // setUsername();
+    // setProfileurl();
+
+    // //Solution where pictures works but not delete/edit
+    // getUsername(idofuser).then((result) {   
+    //   getProfileurl(idofuser).then((result2) { 
+    //     setState(() {
+    //       currentUsername = result;
+    //       currentProfileurl = result2;
+    //     }); 
+    //   });  
+    // });
+    // print('currentProfileurl: ' + currentProfileurl);
     return MaterialApp(
         title: 'Flutter Firebase Demo',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -62,7 +88,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icon(Icons.ac_unit, color: Colors.white), 
                 label: Text('Feed', style: TextStyle(color: Colors.white)),
                 onPressed: () {
-                  widget.toggleView();
+                  var route = new MaterialPageRoute(
+                    builder: (BuildContext context) => new HomeScreen(),
+                  );
+                  Navigator.of(context).push(route);
                 },
               ),
             leadingWidth: 100,
@@ -141,41 +170,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Padding(
                       padding: EdgeInsets.all(8),
                       child: Column(children: <Widget>[
-                          TextField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: 5,
-                            style: TextStyle(color: Colors.white),
-                            controller: textController,
-                            decoration: InputDecoration(
-                              // isDense: true,
-                              // contentPadding: EdgeInsets.all(40),
-                              suffixIcon: IconButton(
-                                icon: Icon(Icons.add_a_photo),
+                        Column(children: [
+                        IconButton(icon : Icon(Icons.add_a_photo),
                                 color: Colors.white,
-                                tooltip: 'Upload Image',
                                 onPressed: () {
+                                  print('pressed');
                                   uploadimage().then((imageUrl) {
                                     setState(() {
-                                      finalurl = imageUrl;
+                                      profileurl = imageUrl;
+                                      currentProfileurl = profileurl;
                                     });
+                                    FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                    'profileurl': profileurl,
+                                  });
                                   });
                                 },
-                              ),
-                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
-                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1)),
-                              labelText: 'Post something',
-                              labelStyle: TextStyle(fontSize: 15,color: Colors.white),
-                              hintText: 'What’s up ?',
-                              hintStyle: TextStyle(color: Colors.white)
+                                ),                             
+                        Transform.translate(child:
+                          Text(currentUsername, style: GoogleFonts.alegreya(color: Colors.white, fontSize: 26)),
+                          offset:Offset(100,20)
+                        ),
+                          ],
+                        ), 
+                          currentProfileurl != '' ? Transform.translate(
+                              child: Image.network(
+                                  currentProfileurl, width: 150),
+                              offset:
+                                  Offset(-75, -50)
+                            )
+                          : Transform.translate(
+                              child: Image.network(
+                                  'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 150),
+                              offset:
+                                  Offset(-75, -50)
                             ),
-                          ),
                       ]),
                     ),
-                    Container(
-                      padding: EdgeInsets.only(right: 200),
-                      child : Text((finalurl != '' && finalurl != null) ? 'Image successfully uploaded !' : '', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14))),
-                    //SizedBox(height: 1),
-                    Text(error,style: TextStyle(color: Colors.red, fontSize: 14.0)),
+                    
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
                       padding: EdgeInsets.all(12),
@@ -347,10 +378,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Text(username + '\n\n' + textContent,
+                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
-                                                      offset: Offset(1, 1))),
+                                                              Transform.translate(
+                                                                child: currentProfileurl != '' ? Image.network(
+                                                                    currentProfileurl, width: 40)
+                                                                    : Image.network(
+                                                                    'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
+                                                                offset:
+                                                                    Offset(-100, -60)
+                                                              ),]),
+                                                      offset: Offset(1, -4))),
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -423,4 +462,11 @@ Future<String> getUsername(String id) async{
   DocumentSnapshot ds = await FirebaseFirestore.instance.collection('usernames_list').doc(id).get();
   username = ds['username'];
   return username;
+}
+
+Future<String> getProfileurl(String id) async{
+  var profileurl;
+  DocumentSnapshot ds = await FirebaseFirestore.instance.collection(id).doc('profileurl').get();
+  profileurl = ds['profileurl'];
+  return profileurl;
 }

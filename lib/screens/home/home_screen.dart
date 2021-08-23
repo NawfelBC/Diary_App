@@ -10,13 +10,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
+import 'package:my_app/screens/home/profile_screen.dart';
 import 'package:my_app/services/auth.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
-  final Function toggleView;
-  HomeScreen({required this.toggleView});
+  
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -39,17 +39,37 @@ class _HomeScreenState extends State<HomeScreen> {
   String error = '';
   String postId = '';
   String currentUsername = '';
+  String currentProfileurl = '';
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
+    
+    // //Solution where delete/edit works but not pictures
     Future<void> setUsername() async {
       setState(() async {
         currentUsername = await getUsername(idofuser);
       });
     }
+    Future<void> setProfileurl() async {
+      setState(() async {
+        currentProfileurl = await getProfileurl(idofuser);
+      });
+    }
     setUsername();
+    setProfileurl();
+
+    //Solution where pictures works but not delete/edit
+    // getUsername(idofuser).then((result) {   
+    //   getProfileurl(idofuser).then((result2) { 
+    //     setState(() {
+    //       currentUsername = result;
+    //       currentProfileurl = result2;
+    //     }); 
+    //   });  
+    // });
+    //print('currentProfileurl: ' + currentProfileurl);
     return MaterialApp(
         title: 'Flutter Firebase Demo',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -62,7 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.ac_unit, color: Colors.white), 
                 label: Text('Profile', style: TextStyle(color: Colors.white)),
                 onPressed: () {
-                  widget.toggleView();
+                  var route = new MaterialPageRoute(
+                    builder: (BuildContext context) => new ProfileScreen(currentUsername:currentUsername,currentProfileurl:currentProfileurl),
+                  );
+                  Navigator.of(context).push(route);
                 },
               ),
             leadingWidth: 100,
@@ -112,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'edited': 'N',
                     'userId': idofuser,
                     'username': currentUsername,
+                    'profileurl': currentProfileurl,
                   }),
                   FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
                     //'creator id': ,
@@ -121,6 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'edited': 'N',
                     'userId': idofuser,
                     'username': currentUsername,
+                    'profileurl': currentProfileurl,
                   }),
                   textController.clear(),
                   FocusScope.of(context).requestFocus(FocusNode()),
@@ -366,10 +391,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Text(username + '\n\n' + textContent,
+                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
-                                                      offset: Offset(1, 1))),
+                                                              Transform.translate(
+                                                                child: username == currentUsername ? Image.network(
+                                                                    currentProfileurl, width: 40)
+                                                                 : snapshot.data!.docs[index]['profileurl'] != '' ? Image.network(
+                                                                    snapshot.data!.docs[index]['profileurl'], width: 40)
+                                                                    : Image.network(
+                                                                    'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
+                                                                offset:
+                                                                    Offset(-100, -60)
+                                                              ),]),
+                                                      offset: Offset(1, -4))),
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -419,10 +454,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   title: Padding(padding: EdgeInsets.only(top:15), child : Transform.translate(
-                                                      child: Text(username + '\n\n' + textContent,
+                                                      child: Column(children: [ Text(username + '\n\n' + textContent,
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white)),
-                                                      offset: Offset(1, 1))),
+                                                              Transform.translate(
+                                                                child: username == currentUsername ? Image.network(
+                                                                    currentProfileurl, width: 40)
+                                                                 : snapshot.data!.docs[index]['profileurl'] != '' ? Image.network(
+                                                                    snapshot.data!.docs[index]['profileurl'], width: 40)
+                                                                    : Image.network(
+                                                                    'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
+                                                                offset:
+                                                                    Offset(-100, -60)
+                                                              ),]),
+                                                      offset: Offset(1, -4))),
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -482,4 +527,11 @@ Future<String> getUsername(String id) async{
   DocumentSnapshot ds = await FirebaseFirestore.instance.collection('usernames_list').doc(id).get();
   username = ds['username'];
   return username;
+}
+
+Future<String> getProfileurl(String id) async{
+  var profileurl;
+  DocumentSnapshot ds = await FirebaseFirestore.instance.collection(id).doc('profileurl').get();
+  profileurl = ds['profileurl'];
+  return profileurl;
 }
