@@ -9,11 +9,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mailer/smtp_server.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/home/profile_screen.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
-import 'package:like_button/like_button.dart';
+import 'package:delayed_display/delayed_display.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   var finalurl;
   TextEditingController textController = new TextEditingController();
+  TextEditingController _ReportController = new TextEditingController();
   bool checker = false;
   var temp;
   final AuthService _auth = AuthService();
@@ -42,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String postId = '';
   String currentUsername = '';
   String currentProfileurl = '';
+  var valueText;
+  var reportContent;
   var like_button_color = Colors.white;
 
   @override
@@ -109,53 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // floatingActionButton: FloatingActionButton.extended(
-          //   backgroundColor: Color.fromRGBO(102, 124, 111, 2),
-          //   onPressed: () async => [
-          //     if ((textController.text == "") & (finalurl == null || finalurl == '')){
-          //      setState(() {
-          //             error = 'Nothing to post';
-          //           }),
-          //     }
-          //     else
-          //       { 
-          //         setState(() {
-          //             error = '';
-          //             postId = DateTime.now().toString() + idofuser;
-          //           }),
-          //         FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
-          //           'text': textController.text,
-          //           'timestamp': Timestamp.fromDate(DateTime.now()),
-          //           'imageUrl': finalurl != null ? finalurl : '',
-          //           'edited': 'N',
-          //           'userId': idofuser,
-          //           'username': currentUsername,
-          //           'profileurl': currentProfileurl,
-          //         }),
-          //         FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
-                    
-          //           'text': textController.text,
-          //           'timestamp': Timestamp.fromDate(DateTime.now()),
-          //           'imageUrl': finalurl != null ? finalurl : '',
-          //           'edited': 'N',
-          //           'userId': idofuser,
-          //           'username': currentUsername,
-          //           'profileurl': currentProfileurl,
-          //         }),
-          //         textController.clear(),
-          //         FocusScope.of(context).requestFocus(FocusNode()),
-          //         setState(() {
-          //           finalurl = null;
-          //         })
-          //       }
-          //   ],
-          //   label: Text(
-          //     'Send',
-          //     style: TextStyle(fontSize: 22),
-          //   ),
-          //   shape: RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.all(Radius.circular(12))),
-          // ),
           body: ListView(
             children: [ Container(
               child: Container(
@@ -243,14 +200,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 })
                               }
                           ],
-                        ),offset: Offset(150,1))
+                        ),offset: Offset(150,1)),
+                        Text(error,style: TextStyle(color: Colors.red, fontSize: 14.0)),
                       ]),
                     ),
                     Container(
                       padding: EdgeInsets.only(right: 200),
                       child : finalurl != '' && finalurl != null ? Transform.translate(child: Stack(alignment: Alignment(1.5,1), children: <Widget> [Text('Image successfully uploaded !', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14)),
                     Image.network(finalurl,width: 30)]),offset:Offset(0,-35)) : Text('')),
-                    Text(error,style: TextStyle(color: Colors.red, fontSize: 14.0)),
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
                       //padding: EdgeInsets.all(12),
@@ -287,49 +244,44 @@ class _HomeScreenState extends State<HomeScreen> {
                             return userId == idofuser ? Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
-                                // confirmDismiss:
-                                //     (DismissDirection direction) async {
-                                //   return await showDialog(
-                                //     context: context,
-                                //     builder: (BuildContext context) {
-                                //       return AlertDialog(
-                                //         title:
-                                //             const Text("Delete Confirmation"),
-                                //         content: const Text(
-                                //             "Are you sure you want to delete this post?"),
-                                //         actions: <Widget>[
-                                //           TextButton(
-                                //               onPressed: () =>
-                                //                   Navigator.of(context).pop(true),
-                                //               child: const Text("Delete")),
-                                //           TextButton(
-                                //             onPressed: () =>
-                                //                 Navigator.of(context)
-                                //                     .pop(false),
-                                //             child: const Text("Cancel"),
-                                //           ),
-                                //         ],
-                                //       );
-                                //     },
-                                //   );
-                                // },
                                 onDismissed: (direction) {
-                                  snapshot.data!.docs.remove(index);
-                                  FirebaseFirestore.instance
-                                      .collection(idofuser)
-                                      .doc(snapshot.data!.docs[index].id)
-                                      .delete();
-                                  FirebaseFirestore.instance
-                                      .collection('all_posts')
-                                      .doc(snapshot.data!.docs[index].id)
-                                      .delete();
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('Post deleted !'),
-                                    backgroundColor: Colors.red,
-                                    duration: Duration(seconds: 2)));
-                                  // setState(() {
-                                  //   error = '';
-                                  // });
+                                  showDialog(
+                                    context :context,
+                                    builder: (context){
+                                      return AlertDialog(
+                                        title: Text("Delete confirmation"),
+                                        content: Text('Are you sure ?'),
+                                        actions: <Widget> [
+                                          TextButton(
+                                            child: Text('Delete'),
+                                            onPressed: () {
+                                              setState(() {
+                                                snapshot.data!.docs.remove(index);
+                                                FirebaseFirestore.instance
+                                                    .collection(idofuser)
+                                                    .doc(snapshot.data!.docs[index].id)
+                                                    .delete();
+                                                FirebaseFirestore.instance
+                                                    .collection('all_posts')
+                                                    .doc(snapshot.data!.docs[index].id)
+                                                    .delete();
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                  content: Text('Post deleted !'),
+                                                  backgroundColor: Colors.red,
+                                                  duration: Duration(seconds: 2)));
+                                              });
+                                            }),
+                                          TextButton(
+                                          child: Text('Cancel'),
+                                          onPressed: () {
+                                            setState(() {
+                                              Navigator.pop(context);
+                                            });
+                                          }) 
+                                        ],
+                                      );
+                                    }); 
                                 },
                                 child: Container(
                                   child : GestureDetector(
@@ -411,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               },
                                               child: const Text("Done")),
                                           TextButton(
-                                            child: const Text("Change Image"),
+                                            child: const Text("Add/Change Image"),
                                             onPressed: () async {
                                               await uploadimage().then((imageUrl) {
                                                 setState(() {
@@ -423,9 +375,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                             },
                                           ),
                                           TextButton(
-                                            onPressed: () =>
+                                            onPressed: () {
+                                              setState(() {
+                                                finalurl = null;
                                                 Navigator.of(context)
-                                                    .pop(false),
+                                                    .pop(false);
+                                              });
+                                                },
                                             child: const Text("Cancel"),
                                           ),
                                         ],
@@ -443,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   dense: true,
-                                                  leading: username == currentUsername ? ClipRRect(
+                                                  leading: username == currentUsername && currentProfileurl != '' ? ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
                                                                     currentProfileurl, width: 40))
@@ -475,7 +431,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),
                                                       ]),              
-                                                  trailing: Column(children: <Widget> [ edition == 'Y'
+                                                  trailing: Column(children: <Widget> [
+                                                  edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
                                                           .add_jm()
@@ -498,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   icon: Icon(Icons.favorite),
                                                   color: liked_by.contains(idofuser) ? Colors.red : Colors.white,
                                                   tooltip: 'Like',
-                                                   onPressed: () {
+                                                  onPressed: () {
                                                     if(liked_by.contains(idofuser) == false){
                                                     
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
@@ -598,7 +555,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   isThreeLine: true,
                                                   
                                               ),
-                                              Align(alignment: Alignment.centerRight, child: Column(children: [
+                                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                                IconButton(
+                                                  alignment: Alignment.bottomLeft,
+                                                  iconSize: 22,
+                                                  icon: Icon(Icons.warning_rounded),
+                                                  color: Colors.yellow,
+                                                  tooltip: 'Report',
+                                                   onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                      return AlertDialog(
+                                                      title: Text("Report"),
+                                                      content: TextField( 
+                                                        onChanged: (value) { 
+                                                          setState(() {
+                                                            valueText = value;
+                                                          });
+                                                        }, 
+                                                        controller: _ReportController, 
+                                                        decoration: InputDecoration(hintText: "What's the problem ?"), 
+                                                      ),
+                                                      actions: <Widget> [
+                                                        TextButton(
+                                                          child: Text('Send'),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              reportContent = valueText;
+                                                              FirebaseFirestore.instance.collection('reported_posts').add({'post': snapshot.data!.docs[index].id,'reported_by': idofuser, 'message': reportContent});
+                                                              _ReportController.clear();
+                                                              Navigator.pop(context);
+                                                            });
+                                                          }),
+                                                        TextButton(
+                                                        child: Text('Cancel'),
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _ReportController.clear();
+                                                            Navigator.pop(context);
+                                                          });
+                                                        }) 
+                                                      ],
+                                                    );});  
+                                                  }
+                                                  
+                                                ),
+                                                Column(children: [
                                                 Text(likes.toString(), style:TextStyle(color: Colors.white)), 
                                                 IconButton(
                                                   icon: Icon(Icons.favorite),
@@ -622,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   },
                                                 ),
                                               ])
-                                              ),
+                                              ])
                                             ],
                                           ),
                                         )
@@ -670,15 +673,3 @@ Future<String> getProfileurl(String id) async{
   profileurl = ds['profileurl'];
   return profileurl;
 }
-
-// getAllPostsId() async {
-//   var doclist = [];
-//   var values; 
-//   await FirebaseFirestore.instance.collection('all_posts').get().then((querySnapshot) => {
-//     values = querySnapshot.docs,
-//     values.forEach((doc) => {
-//         doclist.add(doc.id),
-//     })}
-//   );
-//   return doclist;
-// }

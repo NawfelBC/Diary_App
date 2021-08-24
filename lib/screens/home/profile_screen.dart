@@ -12,7 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
-
+import 'package:delayed_display/delayed_display.dart';
 import 'home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -134,54 +134,127 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: EdgeInsets.all(8),
                       child: Column(children: <Widget>[
                         Column(children: [
-                          Container(height: 30, child:
-                        IconButton(icon : new Icon(Icons.add_a_photo),
-                                //alignment: Alignment(-20,5),
-                                color: Colors.white,
-                                onPressed: () {
-                                  print('pressed');
-                                  uploadimage().then((imageUrl) {
-                                    setState(() {
-                                      profileurl = imageUrl;
-                                      currentProfileurl = profileurl;
-                                    });
-                                    FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
-                                    'profileurl': profileurl,
-                                    });
-                                    allPostsId.forEach((element) async {
-                                      DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
-                                      String x = '';
-                                      await documentReference.get().then((snapshot) {
-                                        x = snapshot['username'].toString();
-                                      });
-                                      if (x == currentUsername){
-                                        FirebaseFirestore.instance.collection('all_posts').doc(element).update({
-                                        'profileurl': profileurl,
-                                        });
-                                      }
-                                    });
-                                  });
-                                },
-                              )),                             
+                          Container(height: 80, child:
+                                                     
                         Column(children: <Widget>[
                           new Transform.translate(child : Text(currentUsername, style: GoogleFonts.alegreya(color: Colors.white, fontSize: 30)), offset:Offset(100,20)),
                           new Transform.translate(child : Text('Joined Diary : ' + DateFormat('yyyy-MM-dd').format(user.metadata.creationTime!), //user.metadata.creationTime.toString().split(' ')[0],
                                                   style: GoogleFonts.alegreya(color: Colors.white, fontSize: 15)), offset:Offset(100,40)),
                           ]),
                           
-                          ],
+                          )],
                         ), 
                           currentProfileurl != '' ? Transform.translate(
-                              child: ClipRRect(
+                              child: Column(children: [ClipRRect(
                                   borderRadius: BorderRadius.circular(12.0),
                                   child: Image.network(
                                   currentProfileurl, width: 150)),
+                                  
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    child: Text(
+                                      'Update image',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    onPressed: (){
+                                      
+                                      uploadimage().then((imageUrl) {
+                                        setState(() {
+                                          profileurl = imageUrl;
+                                          currentProfileurl = profileurl;
+                                        });
+                                        FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                        'profileurl': profileurl,
+                                        });
+                                        allPostsId.forEach((element) async {
+                                          DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
+                                          String x = '';
+                                          await documentReference.get().then((snapshot) {
+                                            x = snapshot['username'].toString();
+                                          });
+                                          if (x == currentUsername){
+                                            FirebaseFirestore.instance.collection('all_posts').doc(element).update({
+                                            'profileurl': profileurl,
+                                            });
+                                          }
+                                        });
+                                      });
+                                    }          
+                              )]),
                               offset:
                                   Offset(-75, -50)
                             )
                           : Transform.translate(
-                              child: Image.network(
+                              child: Column(children: [Image.network(
                                   'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 150),
+
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    child: Text(
+                                      'Update image',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    onPressed: (){
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                      return AlertDialog(
+                                      title: Text("Report"),
+                                      content: Text('test'),
+                                        
+                                      actions: <Widget> [
+                                        TextButton(
+                                          child: Text('Add/Change image'),
+                                          onPressed: () {
+                                            uploadimage().then((imageUrl) {
+                                              setState(() {
+                                                profileurl = imageUrl;
+                                                currentProfileurl = profileurl;
+                                              });
+                                              FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                              'profileurl': profileurl,
+                                              });
+                                              allPostsId.forEach((element) async {
+                                                DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
+                                                String x = '';
+                                                await documentReference.get().then((snapshot) {
+                                                  x = snapshot['username'].toString();
+                                                });
+                                                if (x == currentUsername){
+                                                  FirebaseFirestore.instance.collection('all_posts').doc(element).update({
+                                                  'profileurl': profileurl,
+                                                  });
+                                                }
+                                              });
+                                            });
+                                            Navigator.pop(context);
+                                          }),
+                                        TextButton(
+                                        child: Text('Delete Image'),
+                                        onPressed: () {
+                                           FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                              'profileurl': '',
+                                              });
+                                              allPostsId.forEach((element) async {
+                                                DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
+                                                String x = '';
+                                                await documentReference.get().then((snapshot) {
+                                                  x = snapshot['username'].toString();
+                                                });
+                                                if (x == currentUsername){
+                                                  FirebaseFirestore.instance.collection('all_posts').doc(element).update({
+                                                  'profileurl': '',
+                                                  });
+                                                }
+                                              });
+                                              Navigator.pop(context);
+                                        }) 
+                                      ],
+                                    );});  
+                                },
+                                )]),
                               offset:
                                   Offset(-75, -50)
                             ),
@@ -249,22 +322,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 //   );
                                 // },
                                 onDismissed: (direction) {
-                                  snapshot.data!.docs.remove(index);
-                                  FirebaseFirestore.instance
-                                      .collection(idofuser)
-                                      .doc(snapshot.data!.docs[index].id)
-                                      .delete();
-                                  FirebaseFirestore.instance
-                                      .collection('all_posts')
-                                      .doc(snapshot.data!.docs[index].id)
-                                      .delete();
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text('Post deleted !'),
-                                      backgroundColor: Colors.red,
-                                      duration: Duration(seconds: 2)));
-                                  // setState(() {
-                                  //   error = '';
-                                  // });
+                                  showDialog(
+                                    context :context,
+                                    builder: (context){
+                                      return AlertDialog(
+                                        title: Text("Delete confirmation"),
+                                        content: Text('Are you sure ?'),
+                                        actions: <Widget> [
+                                          TextButton(
+                                            child: Text('Delete'),
+                                            onPressed: () {
+                                              setState(() {
+                                                snapshot.data!.docs.remove(index);
+                                                FirebaseFirestore.instance
+                                                    .collection(idofuser)
+                                                    .doc(snapshot.data!.docs[index].id)
+                                                    .delete();
+                                                FirebaseFirestore.instance
+                                                    .collection('all_posts')
+                                                    .doc(snapshot.data!.docs[index].id)
+                                                    .delete();
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                  content: Text('Post deleted !'),
+                                                  backgroundColor: Colors.red,
+                                                  duration: Duration(seconds: 2)));
+                                              });
+                                            }),
+                                          TextButton(
+                                          child: Text('Cancel'),
+                                          onPressed: () {
+                                            setState(() {
+                                              Navigator.pop(context);
+                                            });
+                                          }) 
+                                        ],
+                                      );
+                                    }); 
                                 },
                                 child: Container(
                                     child : GestureDetector(
@@ -333,7 +427,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               },
                                               child: const Text("Done")),
                                           TextButton(
-                                            child: const Text("Change Image"),
+                                            child: const Text("Add/Change Image"),
                                             onPressed: () async {
                                               await uploadimage().then((imageUrl) {
                                                 setState(() {
