@@ -48,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String error = '';
   String postId = '';
   var allPostsId;
+  var like_button_color = Colors.white;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
@@ -83,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // });
     // print('currentProfileurl: ' + currentProfileurl);
     return MaterialApp(
-        title: 'Flutter Firebase Demo',
+        title: 'Diary',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
         home: Scaffold(
           appBar: AppBar(
@@ -108,6 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   //   builder: (BuildContext context) => new Wrapper(),
                   // );
                   // Navigator.of(context).push(route);
+                  Navigator.pop(context);
                 },
               ),
             ],
@@ -132,6 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: EdgeInsets.all(8),
                       child: Column(children: <Widget>[
                         Column(children: [
+                          Container(height: 30, child:
                         IconButton(icon : new Icon(Icons.add_a_photo),
                                 //alignment: Alignment(-20,5),
                                 color: Colors.white,
@@ -159,10 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     });
                                   });
                                 },
-                                ),                             
+                              )),                             
                         Column(children: <Widget>[
                           new Transform.translate(child : Text(currentUsername, style: GoogleFonts.alegreya(color: Colors.white, fontSize: 30)), offset:Offset(100,20)),
-                          new Transform.translate(child : Text('Joined Diary : ' + user.metadata.creationTime.toString().split(' ')[0], 
+                          new Transform.translate(child : Text('Joined Diary : ' + DateFormat('yyyy-MM-dd').format(user.metadata.creationTime!), //user.metadata.creationTime.toString().split(' ')[0],
                                                   style: GoogleFonts.alegreya(color: Colors.white, fontSize: 15)), offset:Offset(100,40)),
                           ]),
                           
@@ -214,6 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             final imageUrl = (docData['imageUrl'] as String);
                             final edition = (docData['edited'] as String);
                             final username = (docData['username'] as String);
+                            final likes = (docData['likes'] as int);
+                            final liked_by = (docData['liked_by'] as List);
                             return Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
@@ -253,6 +258,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       .collection('all_posts')
                                       .doc(snapshot.data!.docs[index].id)
                                       .delete();
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text('Post deleted !'),
+                                      backgroundColor: Colors.red,
+                                      duration: Duration(seconds: 2)));
                                   // setState(() {
                                   //   error = '';
                                   // });
@@ -401,7 +410,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           fontSize: 11, color: Colors.white)),
                                                   isThreeLine: true,
                                                   
-                                              )],
+                                              ),
+                                              Align(alignment: Alignment.centerRight, child: Column(children: [
+                                                Text(likes.toString(), style:TextStyle(color: Colors.white)), 
+                                                IconButton(
+                                                  icon: Icon(Icons.favorite),
+                                                  color: liked_by.contains(idofuser) ? Colors.red : Colors.white,
+                                                  tooltip: 'Like',
+                                                  onPressed: () {
+                                                    if(liked_by.contains(idofuser) == false){
+                                                    
+                                                    FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
+                                                    FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayUnion([idofuser])});
+                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
+                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayUnion([idofuser])})
+                                                    ;}
+                                                    else{
+                                                      
+                                                    FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(-1)});
+                                                    FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayRemove([idofuser])});
+                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(-1)});
+                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayRemove([idofuser])});
+                                                    }
+                                                  },
+                                                ),
+                                              ])
+                                              ),
+                                            ],
                                           ),
                                         )
                                       )
