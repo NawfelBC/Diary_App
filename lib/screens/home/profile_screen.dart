@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String error = '';
   String postId = '';
   var allPostsId;
-  var like_button_color = Colors.white;
+  //var like_button_color = Colors.white;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
@@ -58,31 +58,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     getAllPostsId().then((x) => {
       allPostsId = x
     });
-
-    // //Solution where delete/edit works but not pictures
-    // Future<void> setUsername() async {
-    //   setState(() async {
-    //     currentUsername = await getUsername(idofuser);
-    //   });
-    // }
-    // Future<void> setProfileurl() async {
-    //   setState(() async {
-    //     currentProfileurl = await getProfileurl(idofuser);
-    //   });
-    // }
-    // setUsername();
-    // setProfileurl();
-
-    // //Solution where pictures works but not delete/edit
-    // getUsername(idofuser).then((result) {   
-    //   getProfileurl(idofuser).then((result2) { 
-    //     setState(() {
-    //       currentUsername = result;
-    //       currentProfileurl = result2;
-    //     }); 
-    //   });  
-    // });
-    // print('currentProfileurl: ' + currentProfileurl);
     return MaterialApp(
         title: 'Diary',
         theme: new ThemeData(scaffoldBackgroundColor: Color.fromRGBO(24,24,24, 2)),
@@ -95,7 +70,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icon(Icons.ac_unit, color: Colors.white), 
                 label: Text('Feed', style: TextStyle(color: Colors.white)),
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => new HomeScreen()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
               ),
             leadingWidth: 100,
@@ -105,11 +84,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: Text('Logout', style: TextStyle(color: Colors.white)),
                 onPressed: () async {
                   await _auth.signOut();
-                  // var route = new MaterialPageRoute(
-                  //   builder: (BuildContext context) => new Wrapper(),
-                  // );
-                  // Navigator.of(context).push(route);
-                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => new Wrapper()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
               ),
             ],
@@ -158,12 +137,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
-                                      
+                                      print(currentProfileurl);
                                       uploadimage().then((imageUrl) {
                                         setState(() {
                                           profileurl = imageUrl;
                                           currentProfileurl = profileurl;
                                         });
+                                        print(currentProfileurl);
                                         FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
                                         'profileurl': profileurl,
                                         });

@@ -80,10 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.ac_unit, color: Colors.white),
                 label: Text('Profile', style: TextStyle(color: Colors.white)),
                 onPressed: () {
-                  var route = new MaterialPageRoute(
-                    builder: (BuildContext context) => new ProfileScreen(currentUsername:currentUsername,currentProfileurl:currentProfileurl),
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => new ProfileScreen(currentUsername:currentUsername,currentProfileurl:currentProfileurl)),
+                    (Route<dynamic> route) => false,
                   );
-                  Navigator.of(context).push(route);
                 },
               ),
             leadingWidth: 100,
@@ -93,10 +94,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: Text('Logout', style: TextStyle(color: Colors.white)),
                 onPressed: () async {
                   await _auth.signOut();
-                  // var route = new MaterialPageRoute(
-                  //   builder: (BuildContext context) => new Wrapper(),
-                  // );
-                  // Navigator.of(context).push(route);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => new Wrapper()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
               ),
             ],
@@ -560,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   alignment: Alignment.bottomLeft,
                                                   iconSize: 22,
                                                   icon: Icon(Icons.warning_rounded),
-                                                  color: Colors.yellow,
+                                                  color: Colors.white,
                                                   tooltip: 'Report',
                                                    onPressed: () {
                                                       showDialog(
