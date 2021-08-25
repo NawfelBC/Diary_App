@@ -41,6 +41,7 @@ dependencies:
   multiple_stream_builder: ^2.0.0
   mailer: ^5.0.2
   delayed_display: ^2.0.0
+  custom_full_image_screen: ^0.0.4
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -31,7 +31,7 @@ class _RegisterState extends State<Register> {
         backgroundColor: Color.fromRGBO(24,24,24, 2),
         elevation: 0.0,
         title: Align(
-        alignment: Alignment(0.66,2),
+        alignment: Alignment(0.1,2),
         child: Text(
                 'diary'.toUpperCase(),
                 style: GoogleFonts.gruppo(
@@ -40,14 +40,6 @@ class _RegisterState extends State<Register> {
                   fontWeight: FontWeight.bold,
                 ),
               ),),
-        actions: <Widget>[
-          TextButton.icon(
-            icon: Icon(Icons.person, color: Colors.white), 
-            label: Text('Sign in', style: TextStyle(color: Colors.white)),
-            onPressed: () {
-              widget.toggleView();
-            },)
-        ],
       ),
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
@@ -55,7 +47,9 @@ class _RegisterState extends State<Register> {
           key: _formKey,
           child: Column(
             children: <Widget>[
-              SizedBox(height: 20.0),
+              SizedBox(height: 30.0),
+              Text('Sign Up', style: TextStyle(fontSize: 22, color: Colors.white)),
+              SizedBox(height: 20),
               TextFormField(
                 decoration: textInputDecoration.copyWith(hintText: 'Username'),
                 validator: (val) => val!.isEmpty  ? 'Enter a valid username' : null,
@@ -77,11 +71,11 @@ class _RegisterState extends State<Register> {
                   });
                 }
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 5.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.white, side: BorderSide(color: Color.fromRGBO(24,24,24, 2))),
                 child: Text(
-                  'Sign up',
+                  'Done',
                   style: TextStyle(color: Colors.black),
                 ),
                 onPressed: () async {
@@ -100,6 +94,20 @@ class _RegisterState extends State<Register> {
                   }
                 },
               ),
+              SizedBox(height: 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              Text('Already have an account?', style: TextStyle(fontSize: 13, color: Colors.white)),
+              SizedBox(width: 10.0),
+              TextButton(
+                //icon: Icon(Icons.person, color: Colors.white), 
+                child: Text('Login', style: TextStyle(color: Colors.black)),
+                style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                onPressed: () {
+                  widget.toggleView();
+                },)
+              ]),
               SizedBox(height: 20.0),
               Text(error,style: TextStyle(color: Colors.red, fontSize: 14.0)),
             ],

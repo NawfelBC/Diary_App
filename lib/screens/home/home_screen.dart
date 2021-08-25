@@ -15,6 +15,8 @@ import 'package:my_app/screens/home/profile_screen.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
 import 'package:delayed_display/delayed_display.dart';
+import 'package:custom_full_image_screen/custom_full_image_screen.dart';
+import 'users_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -77,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leading:
               TextButton.icon(
                 // icon: ClipRRect(borderRadius: BorderRadius.circular(12.0), child: Image.network(currentProfileurl, width: 30)),
-                icon: Icon(Icons.ac_unit, color: Colors.white),
+                icon: Icon(Icons.person, color: Colors.white),
                 label: Text('Profile', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
@@ -90,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leadingWidth: 100,
             actions: <Widget>[
               TextButton.icon(
-                icon: Icon(Icons.person, color: Colors.white),
+                icon: Icon(Icons.logout, color: Colors.white),
                 label: Text('Logout', style: TextStyle(color: Colors.white)),
                 onPressed: () async {
                   await _auth.signOut();
@@ -242,6 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final username = (docData['username'] as String);
                             final likes = (docData['likes'] as int);
                             final liked_by = (docData['liked_by'] as List);
+                            final urlProfile = (docData['profileurl' as String]);
                             
                             return userId == idofuser ? Dismissible(
                                 key: UniqueKey(),
@@ -286,108 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     }); 
                                 },
                                 child: Container(
-                                  child : GestureDetector(
-                                    onTap: () => showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      TextEditingController _textFieldController = TextEditingController();
-                                      if (checker)
-                                        _textFieldController.text = temp;
-                                      else
-                                        _textFieldController.text = textContent;
-                                      return AlertDialog(
-                                        title:
-                                            const Text("Edit Post"),
-                                        content: TextField(
-                                          keyboardType: TextInputType.multiline,
-                                          maxLines: 6,
-                                            onChanged: (value) { },
-                                            controller: _textFieldController,
-                                            decoration: InputDecoration(hintText: 'Text'),
-                                          ),
-                                        actions: <Widget>[
-                                          TextButton(
-                                              onPressed: () {
-                                                if (finalurl != null){
-                                                  FirebaseFirestore.instance
-                                                  .collection(idofuser)
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'imageUrl': finalurl,
-                                                    'edited': 'Y'
-                                                  });
-                                                  FirebaseFirestore.instance
-                                                  .collection('all_posts')
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'imageUrl': finalurl,
-                                                    'edited': 'Y'
-                                                  });
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  _textFieldController.clear();
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                } else if (finalurl == null){
-                                                  FirebaseFirestore.instance
-                                                  .collection(idofuser)
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'edited': 'Y'
-                                                  });
-                                                  FirebaseFirestore.instance
-                                                  .collection('all_posts')
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'edited': 'Y'
-                                                  });
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  _textFieldController.clear();
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                }
-                                                else{
-                                                  print('3');
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                }
-                                                FocusScope.of(context).requestFocus(FocusNode());  
-                                              },
-                                              child: const Text("Done")),
-                                          TextButton(
-                                            child: const Text("Add/Change Image"),
-                                            onPressed: () async {
-                                              await uploadimage().then((imageUrl) {
-                                                setState(() {
-                                                  checker = true;
-                                                  finalurl = imageUrl;
-                                                  temp = _textFieldController.text;
-                                                });
-                                              });
-                                            },
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                finalurl = null;
-                                                Navigator.of(context)
-                                                    .pop(false);
-                                              });
-                                                },
-                                            child: const Text("Cancel"),
-                                          ),
-                                        ],
-                                    );}),
                                     child: Card(
                                         margin: EdgeInsets.all(10),
                                         color: Color.fromRGBO(50,50,50, 2),
@@ -401,14 +302,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   dense: true,
-                                                  leading: username == currentUsername && currentProfileurl != '' ? ClipRRect(
+                                                  leading: username == currentUsername && currentProfileurl != '' ? GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.pushAndRemoveUntil(
+                                                        context,
+                                                        MaterialPageRoute(builder: (context) => new ProfileScreen(currentUsername:currentUsername,currentProfileurl:currentProfileurl)),
+                                                        (Route<dynamic> route) => false,
+                                                      );
+                                                    },
+                                                    child: ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
-                                                                    currentProfileurl, width: 40))
-                                                                 : docData['profileurl'] != '' ? ClipRRect(
+                                                                    currentProfileurl, width: 40)))
+                                                                 : docData['profileurl'] != '' ? GestureDetector(
+                                                                   onTap: () {
+                                                                     Navigator.pushAndRemoveUntil(
+                                                                      context,
+                                                                      MaterialPageRoute(builder: (context) => new ProfileScreen(currentUsername:currentUsername,currentProfileurl:currentProfileurl)),
+                                                                      (Route<dynamic> route) => false,
+                                                                    );
+                                                                   },
+                                                                   child: ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
-                                                                    docData['profileurl'], width: 40))
+                                                                    docData['profileurl'], width: 40)))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
                                                   title: Text('\n' + username,
@@ -418,18 +335,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ? Column(
                                                             children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),   
                                                           Align(alignment: Alignment.centerLeft, child:
                                                           ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
-                                                                child: Image.network(
-                                                              imageUrl)))
+                                                                child: ImageNetworkFullscreen(
+                                                              imageUrl: imageUrl, imageHeight: 200, imageWidth: 190)))
                                                           ])
                                                           : Column(children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),
                                                       ]),              
@@ -447,17 +364,131 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           .format(dateTime),
                                                       style: TextStyle(
                                                           fontSize: 11, color: Colors.white)),
-                                                    
+                                                  
                                                   ]),
                                                   isThreeLine: true,
                                               ),
-                                              Align(alignment: Alignment.centerRight, child: Column(children: [
+                                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                                Column(children: [
+                                                Text('Edit', style:TextStyle(color: Colors.white)), 
+                                                IconButton(
+                                                  icon: Icon(Icons.edit),
+                                                  color: liked_by.contains(idofuser) ? Colors.white : Colors.white,
+                                                  tooltip: 'Edit',
+                                                  onPressed: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext context) {
+                                                        TextEditingController _textFieldController = TextEditingController();
+                                                        if (checker)
+                                                          _textFieldController.text = temp;
+                                                        else
+                                                          _textFieldController.text = textContent;
+                                                        return AlertDialog(
+                                                          title:
+                                                              const Text("Edit Post"),
+                                                          content: TextField(
+                                                            keyboardType: TextInputType.multiline,
+                                                            maxLines: 6,
+                                                              onChanged: (value) { },
+                                                              controller: _textFieldController,
+                                                              decoration: InputDecoration(hintText: 'Text'),
+                                                            ),
+                                                          actions: <Widget>[
+                                                            TextButton(
+                                                                onPressed: () {
+                                                                  if (finalurl != null){
+                                                                    FirebaseFirestore.instance
+                                                                    .collection(idofuser)
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'imageUrl': finalurl,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    FirebaseFirestore.instance
+                                                                    .collection('all_posts')
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'imageUrl': finalurl,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    _textFieldController.clear();
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  } else if (finalurl == null){
+                                                                    FirebaseFirestore.instance
+                                                                    .collection(idofuser)
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    FirebaseFirestore.instance
+                                                                    .collection('all_posts')
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    _textFieldController.clear();
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  }
+                                                                  else{
+                                                                    print('3');
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  }
+                                                                  FocusScope.of(context).requestFocus(FocusNode());  
+                                                                },
+                                                                child: const Text("Done")),
+                                                            TextButton(
+                                                              child: const Text("Add/Change Image"),
+                                                              onPressed: () async {
+                                                                await uploadimage().then((imageUrl) {
+                                                                  setState(() {
+                                                                    checker = true;
+                                                                    finalurl = imageUrl;
+                                                                    temp = _textFieldController.text;
+                                                                  });
+                                                                });
+                                                              },
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  finalurl = null;
+                                                                  Navigator.of(context)
+                                                                      .pop(false);
+                                                                });
+                                                                  },
+                                                              child: const Text("Cancel"),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      }
+                                                    );
+                                                  },
+                                                )]),  
+                                                
+                                                Column(children: [
                                                 Text(likes.toString(), style:TextStyle(color: Colors.white)), 
                                                 IconButton(
                                                   icon: Icon(Icons.favorite),
                                                   color: liked_by.contains(idofuser) ? Colors.red : Colors.white,
                                                   tooltip: 'Like',
-                                                  onPressed: () {
+                                                   onPressed: () {
                                                     if(liked_by.contains(idofuser) == false){
                                                     
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
@@ -475,13 +506,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   },
                                                 ),
                                               ])
-                                              ),
+                                              ])
                                             ],
                                           ),
                                         )
                                     )
                                   ),  
-                                ),
+                                
                                 background: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -509,14 +540,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: <Widget>[
                                               ListTile(
                                                   dense: true,
-                                                  leading: username == currentUsername ? ClipRRect(
+                                                  leading: username == currentUsername ? GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.pushAndRemoveUntil(
+                                                        context,
+                                                        MaterialPageRoute(builder: (context) => new UsersScreen(currentUserId:userId,currentProfileurl:urlProfile,currentUsername: username)),
+                                                        (Route<dynamic> route) => false,
+                                                      );
+                                                    },
+                                                    child: ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
-                                                                    currentProfileurl, width: 40))
-                                                                 : docData['profileurl'] != '' ? ClipRRect(
+                                                                    currentProfileurl, width: 40)))
+                                                                 : docData['profileurl'] != '' ? GestureDetector(
+                                                                   onTap: () {
+                                                                     Navigator.pushAndRemoveUntil(
+                                                                      context,
+                                                                      MaterialPageRoute(builder: (context) => new UsersScreen(currentUserId:userId,currentProfileurl:urlProfile,currentUsername: username)),
+                                                                      (Route<dynamic> route) => false,
+                                                                    );
+                                                                   },
+                                                                   child: ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
                                                                 child: Image.network(
-                                                                    docData['profileurl'], width: 40))
+                                                                    docData['profileurl'], width: 40)))
                                                                     : Image.network(
                                                                     'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 40),
                                                   title: Text('\n' + username,
@@ -526,18 +573,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ? Column(
                                                             children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),   
                                                           Align(alignment: Alignment.centerLeft, child:
                                                           ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
-                                                                child: Image.network(
-                                                              imageUrl)))
+                                                                child: ImageNetworkFullscreen(
+                                                              imageUrl: imageUrl, imageHeight: 200, imageWidth: 190)))
                                                           ])
                                                           : Column(children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),
                                                       ]),              
@@ -557,9 +604,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   isThreeLine: true,
                                                   
                                               ),
-                                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ 
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                                  children: [
+                                                Text('Report', style:TextStyle(color: Colors.white)), 
                                                 IconButton(
-                                                  alignment: Alignment.bottomLeft,
+                                                  //alignment: Alignment.bottomLeft,
                                                   iconSize: 22,
                                                   icon: Icon(Icons.warning_rounded),
                                                   color: Colors.white,
@@ -602,7 +653,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     );});  
                                                   }
                                                   
-                                                ),
+                                                )]),
                                                 Column(children: [
                                                 Text(likes.toString(), style:TextStyle(color: Colors.white)), 
                                                 IconButton(
@@ -614,15 +665,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayUnion([idofuser])});
-                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
-                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayUnion([idofuser])})
+                                                    FirebaseFirestore.instance.collection(userId).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
+                                                    FirebaseFirestore.instance.collection(userId).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayUnion([idofuser])})
                                                     ;}
                                                     else{
                                                       
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(-1)});
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayRemove([idofuser])});
-                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(-1)});
-                                                    FirebaseFirestore.instance.collection(idofuser).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayRemove([idofuser])});
+                                                    FirebaseFirestore.instance.collection(userId).doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(-1)});
+                                                    FirebaseFirestore.instance.collection(userId).doc(snapshot.data!.docs[index].id).update({'liked_by': FieldValue.arrayRemove([idofuser])});
                                                     }
                                                   },
                                                 ),

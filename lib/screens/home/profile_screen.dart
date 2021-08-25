@@ -14,6 +14,8 @@ import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
 import 'package:delayed_display/delayed_display.dart';
 import 'home_screen.dart';
+import 'users_screen.dart';
+import 'package:custom_full_image_screen/custom_full_image_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String currentUsername;
@@ -67,8 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             elevation: 0,
             leading:
               TextButton.icon(
-                icon: Icon(Icons.ac_unit, color: Colors.white), 
-                label: Text('Feed', style: TextStyle(color: Colors.white)),
+                icon: Icon(Icons.arrow_back_ios_new, color: Colors.white), 
+                label: Text('Back', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -137,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
-                                      print(currentProfileurl);
+                                      //print(currentProfileurl);
                                       uploadimage().then((imageUrl) {
                                         setState(() {
                                           profileurl = imageUrl;
@@ -177,64 +179,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                      return AlertDialog(
-                                      title: Text("Report"),
-                                      content: Text('test'),
-                                        
-                                      actions: <Widget> [
-                                        TextButton(
-                                          child: Text('Add/Change image'),
-                                          onPressed: () {
-                                            uploadimage().then((imageUrl) {
-                                              setState(() {
-                                                profileurl = imageUrl;
-                                                currentProfileurl = profileurl;
-                                              });
-                                              FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
-                                              'profileurl': profileurl,
-                                              });
-                                              allPostsId.forEach((element) async {
-                                                DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
-                                                String x = '';
-                                                await documentReference.get().then((snapshot) {
-                                                  x = snapshot['username'].toString();
-                                                });
-                                                if (x == currentUsername){
-                                                  FirebaseFirestore.instance.collection('all_posts').doc(element).update({
-                                                  'profileurl': profileurl,
-                                                  });
-                                                }
-                                              });
+                                      //print(currentProfileurl);
+                                      uploadimage().then((imageUrl) {
+                                        setState(() {
+                                          profileurl = imageUrl;
+                                          currentProfileurl = profileurl;
+                                        });
+                                        print(currentProfileurl);
+                                        FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                        'profileurl': profileurl,
+                                        });
+                                        allPostsId.forEach((element) async {
+                                          DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
+                                          String x = '';
+                                          await documentReference.get().then((snapshot) {
+                                            x = snapshot['username'].toString();
+                                          });
+                                          if (x == currentUsername){
+                                            FirebaseFirestore.instance.collection('all_posts').doc(element).update({
+                                            'profileurl': profileurl,
                                             });
-                                            Navigator.pop(context);
-                                          }),
-                                        TextButton(
-                                        child: Text('Delete Image'),
-                                        onPressed: () {
-                                           FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
-                                              'profileurl': '',
-                                              });
-                                              allPostsId.forEach((element) async {
-                                                DocumentReference documentReference = FirebaseFirestore.instance.collection('all_posts').doc(element);
-                                                String x = '';
-                                                await documentReference.get().then((snapshot) {
-                                                  x = snapshot['username'].toString();
-                                                });
-                                                if (x == currentUsername){
-                                                  FirebaseFirestore.instance.collection('all_posts').doc(element).update({
-                                                  'profileurl': '',
-                                                  });
-                                                }
-                                              });
-                                              Navigator.pop(context);
-                                        }) 
-                                      ],
-                                    );});  
-                                },
-                                )]),
+                                          }
+                                        });
+                                      });
+                                    }          
+                              )]),
                               offset:
                                   Offset(-75, -50)
                             ),
@@ -244,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
                       //padding: EdgeInsets.all(12),
-                      child: Text('Feed', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
+                      child: Text('Posts', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
@@ -341,91 +310,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     }); 
                                 },
                                 child: Container(
-                                    child : GestureDetector(
-                                    onTap: () => showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      TextEditingController _textFieldController = TextEditingController();
-                                      if (checker)
-                                        _textFieldController.text = temp;
-                                      else
-                                        _textFieldController.text = textContent;
-                                      return AlertDialog(
-                                        title:
-                                            const Text("Edit Post"),
-                                        content: TextField(
-                                          keyboardType: TextInputType.multiline,
-                                          maxLines: 6,
-                                            onChanged: (value) { },
-                                            controller: _textFieldController,
-                                            decoration: InputDecoration(hintText: 'Text'),
-                                          ),
-                                        actions: <Widget>[
-                                          TextButton(
-                                              onPressed: () {
-                                                if (finalurl != null){
-                                                  print('1');
-                                                  FirebaseFirestore.instance
-                                                  .collection(idofuser)
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'imageUrl': finalurl,
-                                                    'edited': 'Y'
-                                                  });
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  _textFieldController.clear();
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                } else if (finalurl == null){
-                                                  print('2');
-                                                  FirebaseFirestore.instance
-                                                  .collection(idofuser)
-                                                  .doc(snapshot.data!.docs[index].id)
-                                                  .update({ 
-                                                    'text': _textFieldController.text,
-                                                    'edited': 'Y'
-                                                  });
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  _textFieldController.clear();
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                }
-                                                else{
-                                                  print('3');
-                                                  setState(() {
-                                                    finalurl = null;
-                                                  });
-                                                  Navigator.of(context)
-                                                    .pop(false);
-                                                }
-                                                FocusScope.of(context).requestFocus(FocusNode());  
-                                              },
-                                              child: const Text("Done")),
-                                          TextButton(
-                                            child: const Text("Add/Change Image"),
-                                            onPressed: () async {
-                                              await uploadimage().then((imageUrl) {
-                                                setState(() {
-                                                  checker = true;
-                                                  finalurl = imageUrl;
-                                                  temp = _textFieldController.text;
-                                                });
-                                              });
-                                            },
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context)
-                                                    .pop(false),
-                                            child: const Text("Cancel"),
-                                          ),
-                                        ],
-                                    );}),
                                     child: Card(
                                         margin: EdgeInsets.all(10),
                                         color: Color.fromRGBO(50,50,50, 2),
@@ -454,21 +338,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           ? Column(
                                                             children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
-                                                              fontSize: 16, color: Colors.white))),   
+                                                              fontSize: 16, color: Colors.white)
+                                                            )
+                                                          ),   
                                                           Align(alignment: Alignment.centerLeft, child:
                                                           ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
-                                                                child: Image.network(
-                                                              imageUrl)))
-                                                          ])
+                                                                child: ImageNetworkFullscreen(
+                                                              imageUrl: imageUrl, imageHeight: 200, imageWidth: 190)))
+                                                          ]
+                                                          )
                                                           : Column(children: <Widget> [
                                                           Align(alignment: Alignment.centerLeft, child:
-                                                          Text('\n' + textContent + '\n',
+                                                          Text('\n\n' + textContent + '\n',
                                                           style: TextStyle(
                                                               fontSize: 16, color: Colors.white))),
-                                                      ]),              
+                                                      ]
+                                                      ),              
                                                   trailing: edition == 'Y'
                                                   ? Text(
                                                       '               Edited\n' + DateFormat.yMMMd()
@@ -485,13 +373,125 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   isThreeLine: true,
                                                   
                                               ),
-                                              Align(alignment: Alignment.centerRight, child: Column(children: [
+                                               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                                IconButton(
+                                                  icon: Icon(Icons.edit),
+                                                  color: liked_by.contains(idofuser) ? Colors.white : Colors.white,
+                                                  tooltip: 'Edit',
+                                                  onPressed: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext context) {
+                                                        TextEditingController _textFieldController = TextEditingController();
+                                                        if (checker)
+                                                          _textFieldController.text = temp;
+                                                        else
+                                                          _textFieldController.text = textContent;
+                                                        return AlertDialog(
+                                                          title:
+                                                              const Text("Edit Post"),
+                                                          content: TextField(
+                                                            keyboardType: TextInputType.multiline,
+                                                            maxLines: 6,
+                                                              onChanged: (value) { },
+                                                              controller: _textFieldController,
+                                                              decoration: InputDecoration(hintText: 'Text'),
+                                                            ),
+                                                          actions: <Widget>[
+                                                            TextButton(
+                                                                onPressed: () {
+                                                                  if (finalurl != null){
+                                                                    FirebaseFirestore.instance
+                                                                    .collection(idofuser)
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'imageUrl': finalurl,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    FirebaseFirestore.instance
+                                                                    .collection('all_posts')
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'imageUrl': finalurl,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    _textFieldController.clear();
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  } else if (finalurl == null){
+                                                                    FirebaseFirestore.instance
+                                                                    .collection(idofuser)
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    FirebaseFirestore.instance
+                                                                    .collection('all_posts')
+                                                                    .doc(snapshot.data!.docs[index].id)
+                                                                    .update({ 
+                                                                      'text': _textFieldController.text,
+                                                                      'edited': 'Y'
+                                                                    });
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    _textFieldController.clear();
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  }
+                                                                  else{
+                                                                    print('3');
+                                                                    setState(() {
+                                                                      finalurl = null;
+                                                                    });
+                                                                    Navigator.of(context)
+                                                                      .pop(false);
+                                                                  }
+                                                                  FocusScope.of(context).requestFocus(FocusNode());  
+                                                                },
+                                                                child: const Text("Done")),
+                                                            TextButton(
+                                                              child: const Text("Add/Change Image"),
+                                                              onPressed: () async {
+                                                                await uploadimage().then((imageUrl) {
+                                                                  setState(() {
+                                                                    checker = true;
+                                                                    finalurl = imageUrl;
+                                                                    temp = _textFieldController.text;
+                                                                  });
+                                                                });
+                                                              },
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  finalurl = null;
+                                                                  Navigator.of(context)
+                                                                      .pop(false);
+                                                                });
+                                                                  },
+                                                              child: const Text("Cancel"),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      }
+                                                    );
+                                                  },
+                                                ),  
+                                                
+                                                Column(children: [
                                                 Text(likes.toString(), style:TextStyle(color: Colors.white)), 
                                                 IconButton(
                                                   icon: Icon(Icons.favorite),
                                                   color: liked_by.contains(idofuser) ? Colors.red : Colors.white,
                                                   tooltip: 'Like',
-                                                  onPressed: () {
+                                                   onPressed: () {
                                                     if(liked_by.contains(idofuser) == false){
                                                     
                                                     FirebaseFirestore.instance.collection('all_posts').doc(snapshot.data!.docs[index].id).update({'likes': FieldValue.increment(1)});
@@ -509,13 +509,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   },
                                                 ),
                                               ])
-                                              ),
+                                              ])
                                             ],
                                           ),
                                         )
                                       )
-                                    )
-                                  ),
+                                    ),
                                   background: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.all(Radius.circular(20)),
