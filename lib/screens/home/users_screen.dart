@@ -249,7 +249,7 @@ class _UsersScreenState extends State<UsersScreen> {
                             return Card(
                                   margin: EdgeInsets.all(10),
                                   color: Color.fromRGBO(50,50,50, 2),
-                                  shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
+                                  shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
                                   //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                   //shadowColor: Colors.white,
                                   elevation: 7,

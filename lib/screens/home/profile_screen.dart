@@ -15,7 +15,7 @@ import 'package:my_app/services/auth.dart';
 import 'package:delayed_display/delayed_display.dart';
 import 'home_screen.dart';
 import 'users_screen.dart';
-import 'package:custom_full_image_screen/custom_full_image_screen.dart';
+import 'package:full_screen_image_null_safe/full_screen_image_null_safe.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String currentUsername;
@@ -145,8 +145,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           profileurl = imageUrl;
                                           currentProfileurl = profileurl;
                                         });
-                                        print(currentProfileurl);
                                         FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                        'profileurl': profileurl,
+                                        });
+                                        FirebaseFirestore.instance.collection('usernames_list').doc(idofuser).update({
                                         'profileurl': profileurl,
                                         });
                                         allPostsId.forEach((element) async {
@@ -185,8 +187,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           profileurl = imageUrl;
                                           currentProfileurl = profileurl;
                                         });
-                                        print(currentProfileurl);
                                         FirebaseFirestore.instance.collection(idofuser).doc('profileurl').set({
+                                        'profileurl': profileurl,
+                                        });
+                                        FirebaseFirestore.instance.collection('usernames_list').doc(idofuser).update({
                                         'profileurl': profileurl,
                                         });
                                         allPostsId.forEach((element) async {
@@ -210,11 +214,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ]),
                     ),
                     
-                    Center(child: Container(
-                      color: Color.fromRGBO(24, 24, 24, 2),
-                      //padding: EdgeInsets.all(12),
-                      child: Text('Posts', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
-                    SizedBox(height: 13),
+                    // Center(child: Container(
+                    //   color: Color.fromRGBO(24, 24, 24, 2),
+                    //   //padding: EdgeInsets.all(12),
+                    //   child: Text('Posts', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
+                    // SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection(idofuser)
@@ -313,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     child: Card(
                                         margin: EdgeInsets.all(10),
                                         color: Color.fromRGBO(50,50,50, 2),
-                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1)),
+                                        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
                                         //Colors.primaries[Random().nextInt(Colors.primaries.length)],
                                         //shadowColor: Colors.white,
                                         elevation: 7,
@@ -346,8 +350,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           Align(alignment: Alignment.centerLeft, child:
                                                           ClipRRect(
                                                                 borderRadius: BorderRadius.circular(12.0),
-                                                                child: ImageNetworkFullscreen(
-                                                              imageUrl: imageUrl, imageHeight: 200, imageWidth: 190)))
+                                                                child: FullScreenWidget(child:
+                                                              Image.network(imageUrl))))
                                                           ]
                                                           )
                                                           : Column(children: <Widget> [
@@ -374,6 +378,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   
                                               ),
                                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                                Column(children: [ 
+                                                Text('Edit', style:TextStyle(color: Colors.white)), 
                                                 IconButton(
                                                   icon: Icon(Icons.edit),
                                                   color: liked_by.contains(idofuser) ? Colors.white : Colors.white,
@@ -483,7 +489,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       }
                                                     );
                                                   },
-                                                ),  
+                                                )]),  
                                                 
                                                 Column(children: [
                                                 Text(likes.toString(), style:TextStyle(color: Colors.white)), 
