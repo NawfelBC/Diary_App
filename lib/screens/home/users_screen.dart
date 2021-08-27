@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:full_screen_image_null_safe/full_screen_image_null_safe.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
@@ -282,8 +283,8 @@ class _UsersScreenState extends State<UsersScreen> {
                                                     Align(alignment: Alignment.centerLeft, child:
                                                     ClipRRect(
                                                           borderRadius: BorderRadius.circular(12.0),
-                                                          child: ImageNetworkFullscreen(
-                                                        imageUrl: imageUrl, imageHeight: 200, imageWidth: 190)))
+                                                          child: FullScreenWidget(
+                                                        child: Image.network(imageUrl))))
                                                     ]
                                                     )
                                                     : Column(children: <Widget> [

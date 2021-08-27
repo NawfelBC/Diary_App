@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var valueText;
   var reportContent;
   var like_button_color = Colors.white;
+  var showIcon = true;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                           SizedBox(height:40),
+                          Focus(child: 
                           TextField(
                             keyboardType: TextInputType.multiline,
                             maxLines: 5,
@@ -198,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: InputDecoration(
                               fillColor: Color.fromRGBO(50,50,50, 2),
                               filled: true,
-                              prefixIcon: Icon(Icons.border_color, color: Colors.white),
+                              prefixIcon: showIcon ? Icon(Icons.border_color, color: Colors.white) : null,
                               suffixIcon: IconButton(
                                 icon: Icon(Icons.add_a_photo),
                                 color: Colors.white,
@@ -219,7 +221,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               hintText: 'What’s up ?',
                               hintStyle: TextStyle(color: Colors.white)
                             ),
-                          ),
+                          ), onFocusChange: (hasFocus) {
+                            if(hasFocus)
+                              setState(() {
+                                showIcon = false;
+                              });
+                            else{
+                              setState(() {
+                                showIcon = true;
+                              });
+                            }
+                          }),
                          Transform.translate(child : 
                          ElevatedButton(
                            child: Text(
@@ -336,10 +348,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     .doc(snapshot.data!.docs[index].id)
                                                     .delete();
                                                 Navigator.pop(context);
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                  content: Text('Post deleted !'),
-                                                  backgroundColor: Colors.red,
-                                                  duration: Duration(seconds: 2)));
                                               });
                                             }),
                                           TextButton(
@@ -789,19 +797,31 @@ Future<String> getProfileurl(String id) async{
   return profileurl;
 }
 
+List getSplitUsername(String username){
+  var search = [];
+  var username_split = username.toLowerCase().split('');
+  String temp = '';
+  for(int i=0; i<username_split.length; i++){
+    temp = temp + username_split[i];
+    search.add(temp);
+  }
+  return search;
+}
+
 Future<List<dynamic>> getSuggestion(String query) async {
   var documents;
   var suggestions = [];
   await FirebaseFirestore.instance
       .collection('usernames_list')
-      .where('search', arrayContains: query)
       .get()
       .then((snapshot) {
         documents = snapshot.docs;
       });
-
+  
   for (var doc in documents){
-    suggestions.add({'username':doc['username'], 'profileurl':doc['profileurl'], 'userId':doc['userId']});
+    if(getSplitUsername(doc['username']).contains(query)){
+      suggestions.add({'username':doc['username'], 'profileurl':doc['profileurl'], 'userId':doc['userId']});
+    }
   }
   return suggestions;
 }
