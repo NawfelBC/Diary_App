@@ -1,16 +1,13 @@
-# my_app
+# Diary
 
-A new Flutter project.
+A Flutter project.
 
-## Getting Started
+This app is a social network for small group of friends or family that want to share posts with text and pictures.
 
-This project is a starting point for a Flutter application.
+## Screenshots
+<p float="left">
+  <img src="https://user-images.githubusercontent.com/79513906/131193484-23402d3a-e0a6-4bad-b8e0-274e49d37782.png" width="270" height="550">
+  <img src="https://user-images.githubusercontent.com/79513906/131193578-7617f431-1602-454c-9438-9696cec9d443.png" width="270" height="550">
+  <img src="https://user-images.githubusercontent.com/79513906/131193699-7b301d99-c09a-4bb6-a4cd-250685f71a47.png" width="270" height="550">
+</p>
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
