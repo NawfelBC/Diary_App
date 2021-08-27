@@ -42,6 +42,8 @@ dependencies:
   mailer: ^5.0.2
   delayed_display: ^2.0.0
   custom_full_image_screen: ^0.0.4
+  flutter_typeahead: ^3.2.0
+  full_screen_image_null_safe: ^2.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

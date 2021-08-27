@@ -41,8 +41,19 @@ class AuthService {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
+      var search = [];
+      var username = email.split('@diary.com')[0];
+      var username_split = username.toLowerCase().split('');
+      String temp = '';
+      for(int i=0; i<username_split.length; i++){
+        temp = temp + username_split[i];
+        search.add(temp);
+      }
       FirebaseFirestore.instance.collection('usernames_list').doc(user!.uid).set({
-        'username': email.split('@diary.com')[0],
+        'username': username,
+        'userId': user.uid,
+        'profileurl': '',
+        'search': search
       });
       return _userFromFirebaseUser(user);
     } catch(e) {
