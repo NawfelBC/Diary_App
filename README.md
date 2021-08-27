@@ -1,5 +1,7 @@
 # Diary
 
+## Summary
+
 A social network made with [Flutter](https://flutter.dev/) and [Firebase](https://firebase.google.com/) for small group of friends or family that want to share simple posts with text and pictures.
 
 ## Screenshots
