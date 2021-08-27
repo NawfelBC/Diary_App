@@ -1,16 +1,15 @@
-# my_app
+# Diary
 
-A new Flutter project.
+## Summary
 
-## Getting Started
+A social network made with [Flutter](https://flutter.dev/) and [Firebase](https://firebase.google.com/) for small group of friends or family that want to share simple posts with text and pictures.
 
-This project is a starting point for a Flutter application.
+## Screenshots
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [Login Screen](https://github.com/NawfelBC/Diary_App/tree/main/lib/screens/authenticate)  
+<img src="https://user-images.githubusercontent.com/79513906/131193484-23402d3a-e0a6-4bad-b8e0-274e49d37782.png" width="270" height="550">  
 
-A few resources to get you started if this is your first Flutter project:
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [Home Screen](https://github.com/NawfelBC/Diary_App/blob/main/lib/screens/home/home_screen.dart)  
+<img src="https://user-images.githubusercontent.com/79513906/131193578-7617f431-1602-454c-9438-9696cec9d443.png" width="270" height="550">  
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [Profile Screen](https://github.com/NawfelBC/Diary_App/blob/main/lib/screens/home/profile_screen.dart)  
+<img src="https://user-images.githubusercontent.com/79513906/131193699-7b301d99-c09a-4bb6-a4cd-250685f71a47.png" width="270" height="550">  
