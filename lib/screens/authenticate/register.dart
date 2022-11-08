@@ -73,7 +73,7 @@ class _RegisterState extends State<Register> {
               ),
               SizedBox(height: 5.0),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.white, side: BorderSide(color: Color.fromRGBO(24,24,24, 2))),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, side: BorderSide(color: Color.fromRGBO(24,24,24, 2))),
                 child: Text(
                   'Done',
                   style: TextStyle(color: Colors.black),

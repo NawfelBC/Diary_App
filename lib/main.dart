@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:my_app/screens/home/home_screen.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
       value: AuthService().user,
       child: ScreenUtilInit(
           designSize: ScreenUtil.defaultSize,
-          builder: () => MaterialApp(
+          builder: (context,data) => MaterialApp(
                 debugShowCheckedModeBanner: false,
                 theme: new ThemeData(
                     scaffoldBackgroundColor: Color.fromRGBO(0, 0, 0, 1)),

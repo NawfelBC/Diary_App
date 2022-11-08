@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/services/auth.dart';
 import 'package:my_app/shared/constants.dart';
 import 'package:my_app/shared/loading.dart';
@@ -72,7 +71,7 @@ class _SignInState extends State<SignIn> {
               ),
               SizedBox(height: 5.0),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.white, side: BorderSide(color: Color.fromRGBO(24,24,24, 2))),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, side: BorderSide(color: Color.fromRGBO(24,24,24, 2))),
                 child: Text(
                   'Done',
                   style: TextStyle(color: Colors.black),

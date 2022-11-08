@@ -7,17 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mailer/smtp_server.dart';
-import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/home/profile_screen.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
-import 'package:delayed_display/delayed_display.dart';
 import 'users_screen.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:full_screen_image_null_safe/full_screen_image_null_safe.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -51,13 +47,13 @@ class _HomeScreenState extends State<HomeScreen> {
   var reportContent;
   var like_button_color = Colors.white;
   var showIcon = true;
+  Position? _currentPosition;
 
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
     final User? user = authh.currentUser;
     final idofuser = user!.uid;
-    
     
     Future<void> setUsername() async {
       setState(() async {
@@ -67,6 +63,43 @@ class _HomeScreenState extends State<HomeScreen> {
     Future<void> setProfileurl() async {
       setState(() async {
         currentProfileurl = await getProfileurl(idofuser);
+      });
+    }
+    Future<bool> _handleLocationPermission() async {
+      bool serviceEnabled;
+      LocationPermission permission;
+      
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Location services are disabled. Please enable the services')));
+        return false;
+      }
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {   
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Location permissions are denied')));
+          return false;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Location permissions are permanently denied, we cannot request permissions.')));
+        return false;
+      }
+      return true;
+    }
+    Future<void> _getCurrentPosition() async {
+      final hasPermission = await _handleLocationPermission();
+      if (!hasPermission) return;
+      await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high)
+          .then((Position position) {
+        setState(() => _currentPosition = position);
+      }).catchError((e) {
+        debugPrint(e);
       });
     }
     setUsername();
@@ -80,7 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
             elevation: 0,
             leading:
               TextButton.icon(
-                // icon: ClipRRect(borderRadius: BorderRadius.circular(12.0), child: Image.network(currentProfileurl, width: 30)),
                 icon: Icon(Icons.person, color: Colors.white),
                 label: Text('Profile', style: TextStyle(color: Colors.white)),
                 onPressed: () {
@@ -238,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Send',
                             style: TextStyle(fontSize: 22),
                           ),
-                          style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                          style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(102, 124, 111, 2)),
                           onPressed: () async => [
                             if ((textController.text == "") & (finalurl == null || finalurl == '')){
                             setState(() {
@@ -251,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     error = '';
                                     postId = DateTime.now().toString() + idofuser;
                                   }),
+                                await _getCurrentPosition(),
                                 FirebaseFirestore.instance.collection(idofuser).doc(postId).set({
                                   'text': textController.text,
                                   'timestamp': Timestamp.fromDate(DateTime.now()),
@@ -260,7 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'username': currentUsername,
                                   'profileurl': currentProfileurl,
                                   'likes': 0,
-                                  'liked_by': []
+                                  'liked_by': [],
+                                  'position': _currentPosition.toString()
                                 }),
                                 FirebaseFirestore.instance.collection('all_posts').doc(postId).set({
                                   
@@ -272,7 +306,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'username': currentUsername,
                                   'profileurl': currentProfileurl,
                                   'likes': 0,
-                                  'liked_by': []
+                                  'liked_by': [],
+                                  'position': _currentPosition.toString()
                                 }),
                                 textController.clear(),
                                 FocusScope.of(context).requestFocus(FocusNode()),
@@ -289,11 +324,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.only(right: 200),
                       child : finalurl != '' && finalurl != null ? Transform.translate(child: Stack(alignment: Alignment(1.5,1), children: <Widget> [Text('Image successfully uploaded !', style: GoogleFonts.aleo(color: Colors.white, fontSize: 14)),
                     Image.network(finalurl,width: 30)]),offset:Offset(0,-35)) : Text('')),
-                    // Center(child: Container(
-                    //   color: Color.fromRGBO(24, 24, 24, 2),
-                    //   //padding: EdgeInsets.all(12),
-                    //   child: Text('Explore', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
-                    // SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('all_posts')
@@ -321,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final username = (docData['username'] as String);
                             final likes = (docData['likes'] as int);
                             final liked_by = (docData['liked_by'] as List);
-                            final urlProfile = (docData['profileurl' as String]);
+                            final urlProfile = (docData['profileurl'] as String);
                             
                             return userId == idofuser ? Dismissible(
                                 key: UniqueKey(),
@@ -601,8 +631,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                         margin: EdgeInsets.all(10),
                                         color: Color.fromRGBO(50,50,50, 2),
                                         shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1), borderRadius: BorderRadius.all(Radius.circular(10))),
-                                        //Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                                        //shadowColor: Colors.white,
                                         elevation: 7,
                                         child: Container(
                                           child: Column(
@@ -680,7 +708,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   children: [
                                                 Text('Report', style:TextStyle(color: Colors.white)), 
                                                 IconButton(
-                                                  //alignment: Alignment.bottomLeft,
                                                   iconSize: 22,
                                                   icon: Icon(Icons.warning_rounded),
                                                   color: Colors.white,

@@ -8,14 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
-import 'package:delayed_display/delayed_display.dart';
 import 'home_screen.dart';
-import 'package:custom_full_image_screen/custom_full_image_screen.dart';
 
 class UsersScreen extends StatefulWidget {
   final String currentUserId;
@@ -55,7 +50,6 @@ class _UsersScreenState extends State<UsersScreen> {
   var allPostsId;
   var valueText;
   var reportContent;
-  //var like_button_color = Colors.white;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
@@ -144,12 +138,11 @@ class _UsersScreenState extends State<UsersScreen> {
                                   'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 150),
 
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(102, 124, 111, 2)),
                                     child: Text(
                                       'Update image',
                                       style: TextStyle(fontSize: 15),
                                     ),
-                                    //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
                                       showDialog(
                                         context: context,
@@ -217,7 +210,6 @@ class _UsersScreenState extends State<UsersScreen> {
                     
                     Center(child: Container(
                       color: Color.fromRGBO(24, 24, 24, 2),
-                      //padding: EdgeInsets.all(12),
                       child: Text('Posts', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
                     SizedBox(height: 13),
                     StreamBuilder(
@@ -251,8 +243,6 @@ class _UsersScreenState extends State<UsersScreen> {
                                   margin: EdgeInsets.all(10),
                                   color: Color.fromRGBO(50,50,50, 2),
                                   shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
-                                  //Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                                  //shadowColor: Colors.white,
                                   elevation: 7,
                                   child: Container(
                                     child: Column(

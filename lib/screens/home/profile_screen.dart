@@ -7,14 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:my_app/screens/authenticate/authenticate.dart';
 import 'package:my_app/screens/wrapper.dart';
 import 'package:my_app/services/auth.dart';
-import 'package:delayed_display/delayed_display.dart';
 import 'home_screen.dart';
-import 'users_screen.dart';
 import 'package:full_screen_image_null_safe/full_screen_image_null_safe.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -50,7 +45,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String error = '';
   String postId = '';
   var allPostsId;
-  //var like_button_color = Colors.white;
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth authh = FirebaseAuth.instance;
@@ -132,14 +126,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   currentProfileurl, width: 150)),
                                   
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(102, 124, 111, 2)),
                                     child: Text(
                                       'Update image',
                                       style: TextStyle(fontSize: 15),
                                     ),
-                                    //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
-                                      //print(currentProfileurl);
                                       uploadimage().then((imageUrl) {
                                         setState(() {
                                           profileurl = imageUrl;
@@ -174,14 +166,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   'https://rohsco.rqoh.com/wp-content/uploads/sites/9/2019/09/default-profile.png', width: 150),
 
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
+                                    style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(102, 124, 111, 2)),
                                     child: Text(
                                       'Update image',
                                       style: TextStyle(fontSize: 15),
                                     ),
-                                    //style: ElevatedButton.styleFrom(primary: Color.fromRGBO(102, 124, 111, 2)),
                                     onPressed: (){
-                                      //print(currentProfileurl);
                                       uploadimage().then((imageUrl) {
                                         setState(() {
                                           profileurl = imageUrl;
@@ -213,12 +203,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                       ]),
                     ),
-                    
-                    // Center(child: Container(
-                    //   color: Color.fromRGBO(24, 24, 24, 2),
-                    //   //padding: EdgeInsets.all(12),
-                    //   child: Text('Posts', style: GoogleFonts.alice(color: Colors.white, fontSize: 26)))),
-                    // SizedBox(height: 13),
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection(idofuser)
@@ -248,32 +232,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             return Dismissible(
                                 key: UniqueKey(),
                                 direction: DismissDirection.endToStart,
-                                // confirmDismiss:
-                                //     (DismissDirection direction) async {
-                                //   return await showDialog(
-                                //     context: context,
-                                //     builder: (BuildContext context) {
-                                //       return AlertDialog(
-                                //         title:
-                                //             const Text("Delete Confirmation"),
-                                //         content: const Text(
-                                //             "Are you sure you want to delete this post?"),
-                                //         actions: <Widget>[
-                                //           TextButton(
-                                //               onPressed: () =>
-                                //                   Navigator.of(context).pop(true),
-                                //               child: const Text("Delete")),
-                                //           TextButton(
-                                //             onPressed: () =>
-                                //                 Navigator.of(context)
-                                //                     .pop(false),
-                                //             child: const Text("Cancel"),
-                                //           ),
-                                //         ],
-                                //       );
-                                //     },
-                                //   );
-                                // },
                                 onDismissed: (direction) {
                                   showDialog(
                                     context :context,
@@ -318,8 +276,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         margin: EdgeInsets.all(10),
                                         color: Color.fromRGBO(50,50,50, 2),
                                         shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white, width: 1),borderRadius: BorderRadius.all(Radius.circular(10))),
-                                        //Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                                        //shadowColor: Colors.white,
                                         elevation: 7,
                                         child: Container(
                                           child: Column(
